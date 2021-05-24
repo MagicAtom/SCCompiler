@@ -1,6 +1,9 @@
 #ifndef TOKEN_H
 #define TOKEN_H
 
+#include <list>
+using TokenList = std::list<const Token*>;
+
 class Token{
 public:
     enum {
@@ -84,7 +87,6 @@ public:
     ENUM,
     // TYPE SPECIFIER END
 
-    ATTRIBUTE, // GNU extension __attribute__
     // FUNCTION SPECIFIER BEGIN
     INLINE,
     NORETURN,	// _Noreturn
@@ -114,9 +116,6 @@ public:
     SIZEOF,
     SWITCH,
     WHILE,
-    ALIGNOF, // _Alignof
-    GENERIC, // _Generic
-    IMAGINARY, // _Imaginary
     // KEYWORD END
 
     IDENTIFIER,
@@ -136,29 +135,12 @@ public:
     PLUS,
     MINUS,
     CAST,
-
-    // For preprocessor
-    PP_IF,
-    PP_IFDEF,
-    PP_IFNDEF,
-    PP_ELIF,
-    PP_ELSE,
-    PP_ENDIF,
-    PP_INCLUDE,
-    PP_DEFINE,
-    PP_UNDEF,
-    PP_LINE,
-    PP_ERROR,
-    PP_PRAGMA,
-    PP_NONE,
-    PP_EMPTY,
-
-
-    IGNORE,
-    INVALID,
-    END,
-    NOTOK = -1,
   };
+
+private:
+    bool isKeyWord() const;
+    bool isConstant() const;
+
 };
 
 #endif

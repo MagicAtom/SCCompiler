@@ -30,3 +30,7 @@ scc input.c [-ast ast_path.html] [-ir ir_path.txt] [-o] out.asm
 - [ ] Pointer
 - [ ] Type quailifier: `const volatile`
 - [ ] `sizeof(exp)`
+
+### Reference
+1. [LLVM_Kaleidoscope Tutorial](https://llvm.org/docs/tutorial/MyFirstLanguageFrontend/LangImpl02.html)
+2. [8cc](https://github.com/rui314/8cc)

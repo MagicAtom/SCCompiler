@@ -4,12 +4,15 @@
 // Parser gen Ast
 class Parser {
 public:
-    // Peek()
-    int Next() {
-        
+    Parser(){
+
     }
-    // Expect()
-    // Try(expected Token)
+    ~Parser() {}
+
+    void ParseProcess(); // this is main function
+
+private:
+    
 };
 
 #endif
