@@ -28,6 +28,7 @@ class EmptyStmt;
 class CompoundStmt;
 class FuncDef;
 class TranslationUnit;
+class ReturnStmt;
 
 class ASTNode{
 public:
@@ -42,7 +43,7 @@ public:
     virtual ~Stmt() {}
 protected:
     Stmt() {}
-}
+};
 
 /* and so on */
 

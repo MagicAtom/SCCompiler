@@ -1,6 +1,9 @@
 #ifndef PARSER_H
 #define PARSER_H
 
+#include "Ast.h"
+#include "Token.h"
+
 // Parser gen Ast
 class Parser {
 public:
@@ -9,7 +12,9 @@ public:
     }
     ~Parser() {}
 
-    void ParseProcess(); // this is main function
+    void Parse(); // this is main function
+    void Translate();
+    void DefineBuiltins();
 
 private:
     
