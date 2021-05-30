@@ -2,6 +2,6 @@
 
 void Parser::Parse()
 {
-    DefineBuiltins();
+    // DefineBuiltins(); This is for marcos
     Translate();
 }

@@ -27,7 +27,7 @@ class LabelStmt;
 class EmptyStmt;
 class CompoundStmt;
 class FuncDef;
-class TranslationUnit;
+class Translation;
 class ReturnStmt;
 
 class ASTNode{
@@ -46,5 +46,9 @@ protected:
 };
 
 /* and so on */
+class Translation : public ASTNode{
+public:
+private:
+};
 
 #endif
