@@ -1,7 +1,6 @@
 #include "Scc.h"
 
 int main(int argc,char* argv[]){
-    Scc* scc_ = new Scc();
-    scc_->GetOpt(argc,argv);
-    scc_->Exec();
+    Scc* scc = new Scc(argc,argv);
+    scc->Exec();
 }

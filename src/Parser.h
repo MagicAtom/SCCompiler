@@ -7,6 +7,9 @@
 // Parser gen Ast
 class Parser {
 public:
+    Parser(){
+        
+    }
     Parser(TokenSequence* ts):ts_(ts){
 
     }

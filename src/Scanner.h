@@ -20,6 +20,7 @@ using TokenList = std::vector<Token>;
 using TokenSequence = std::vector<Block>;
 
 class Scanner {
+    friend class Parser;
 public:
     Scanner(){
         text_ = nullptr;

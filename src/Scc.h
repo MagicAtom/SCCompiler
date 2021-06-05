@@ -8,8 +8,15 @@
 
 class Scc{
 public:
+    Scc(int argc,char** argv){
+        GetOpt(argc,argv); // initialize them in parse
+    }
     void GetOpt(int argc,char** argv);
+    void SetUp();
     void Exec();
+private:
+    char* openfile_;
+    char* genfile_;
 private:
     Scanner scanner_;
     Parser parser_;
