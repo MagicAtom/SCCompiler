@@ -7,14 +7,53 @@
 #ifndef CORE_H
 #define CORE_H
 
-#include <string>
+#include <vector>
 
 std::string* ReadFile(const std::string& fileName){
     
 }
 
+typedef struct {
+    void **body;
+    int len;
+    int nalloc;
+} Vector;
+
+typedef struct Type {
+    int kind;
+    int size;
+    int align;
+    bool usig; // true if unsigned
+    bool isstatic;
+    // pointer or array
+    struct Type *ptr;
+    // array length
+    int len;
+    // struct
+    Dict *fields;
+    int offset;
+    bool is_struct; // true if struct, false if union
+    // bitfield
+    int bitoff;
+    int bitsize;
+    // function
+    struct Type *rettype;
+    Vector *params;
+    bool hasva;
+    bool oldstyle;
+} Type;
+
+typedef struct {
+    char* file;
+    unsigned line;
+    unsigned column;
+} SourceLoc;
+
 typedef struct{
-    int count; // tokens contains
+    int count; // token index
+    int kind;
+    int line;
+    int column;
     enum {
     // Punctuators
     LPAR = '(',
@@ -174,8 +213,87 @@ typedef struct{
 }Token;
 
 /* All types */
-typedef struct {
-
-}Node;
+typedef struct ASTNode{
+    int kind;
+    Type *ty;
+    SourceLoc *sourceLoc;
+    union {
+        // Char, int, or long
+        long ival;
+        // Float or double
+        struct {
+            double fval;
+            char *flabel;
+        };
+        // String
+        struct {
+            char *sval;
+            char *slabel;
+        };
+        // Local/global variable
+        struct {
+            char *varname;
+            // local
+            int loff;
+            std::vector<> *lvarinit;
+            // global
+            char *glabel;
+        };
+        // Binary operator
+        struct {
+            struct ASTNode *left;
+            struct ASTNode *right;
+        };
+        // Unary operator
+        struct {
+            struct ASTNode *operand;
+        };
+        // Function call or function declaration
+        struct {
+            char *fname;
+            // Function call
+            Vector *args;
+            struct Type *ftype;
+            // Function pointer or function designator
+            struct Node *fptr;
+            // Function declaration
+            Vector *params;
+            Vector *localvars;
+            struct Node *body;
+        };
+        // Declaration
+        struct {
+            struct Node *declvar;
+            Vector *declinit;
+        };
+        // Initializer
+        struct {
+            struct ASTNode *initval;
+            int initoff;
+            Type *totype;
+        };
+        // If statement or ternary operator
+        struct {
+            struct ASTNode *cond;
+            struct ASTNode *then;
+            struct ASTNode *els;
+        };
+        // Goto and label
+        struct {
+            char *label;
+            char *newlabel;
+        };
+        // Return statement
+        struct ASTNode *retval;
+        // Compound statement
+        Vector *stmts;
+        // Struct reference
+        struct {
+            struct ASTNode *struc;
+            char *field;
+            Type *fieldtype;
+        };
+    };
+}ASTNode;
 
 #endif
