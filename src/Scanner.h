@@ -10,24 +10,37 @@
 #include <string>
 #include <vector>
 
+using TokenList = std::vector<Token>;
 struct Block{
     int line;
     int column;
     TokenList& tl;
 };
-
-using TokenList = std::vector<Token>;
 using TokenSequence = std::vector<Block>;
+
 
 class Scanner {
     friend class Parser;
 public:
+    /*
+    Func:Nothing to Scanner
+    Input: Null
+    Output: text_=nullptr
+    */
     Scanner(){
         text_ = nullptr;
     }
+    /*
+    Func:Read the program text and translate it to TokenList
+    Input： File name
+    Output: TokenList
+    */
     Scanner(const std::string& fileName):filename_(fileName){
 
     }
+    /*
+    Func: release
+    */
     virtual ~Scanner(){
 
     }
