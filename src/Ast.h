@@ -15,6 +15,7 @@ class ConditionalOp;
 class FuncCall;
 class TempVar;
 class Constant;
+class Compound; // 复合类型
 
 class Identifier;
 class Object;
@@ -25,7 +26,7 @@ class Enumerator;
 class Stmt;
 class IfStmt;
 class JumpStmt;
-class LabelStmt;
+class LabelStmt; // For goto
 class EmptyStmt;
 class ReturnStmt;
 using ParamList = std::vector<Expr>;
@@ -102,6 +103,12 @@ protected:
     ReturnStmt(Expr* expr):expr_(expr){}
 private:
     Expr* expr_;
+};
+
+class CompoundStmt:public Stmt{
+public:
+protected:
+private:
 };
 
 class FuncDef:public Stmt{
