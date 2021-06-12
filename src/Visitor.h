@@ -42,6 +42,5 @@ public:
   virtual void VisitEmptyStmt(EmptyStmt* emptyStmt) = 0;
   virtual void VisitCompoundStmt(CompoundStmt* compStmt) = 0;
   virtual void VisitFuncDef(FuncDef* funcDef) = 0;
-  virtual void VisitTranslationUnit(TranslationUnit* unit) = 0;
 };
 #endif 
