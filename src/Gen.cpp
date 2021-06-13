@@ -7,55 +7,70 @@ void Generator::Gen(){
     this->module_->dump();
 }
 
-llvm::Value* VisitBinaryOp(BinaryOp* binary) {
+void Generator::GenExec(){
 
 }
-llvm::Value* VisitUnaryOp(UnaryOp* unary) {
+
+llvm::Value* Generator::VisitBinaryOp(BinaryOp* binary) {
+    auto lhs = VisitExpr(binary->GetLHS());
+    auto rhs = VisitExpr(binary->GetRHS());
+
+    if(!lhs || !rhs)
+        return nullptr;
+
+    switch(binary->GetOp()){
+
+    }
+}
+llvm::Value* Generator::VisitUnaryOp(UnaryOp* unary) {
 
 };
-llvm::Value* VisitConditionalOp(ConditionalOp* cond) {
+llvm::Value* Generator::VisitConditionalOp(ConditionalOp* cond) {
 
 }
-llvm::Value* VisitFuncCall(FuncCall* funcCall) {
+llvm::Value* Generator::VisitFuncCall(FuncCall* funcCall) {
 
 }
-llvm::Value* VisitEnumerator(Enumerator* enumer) {
+llvm::Value* Generator::VisitEnumerator(Enumerator* enumer) {
 
 }
-llvm::Value* VisitIdentifier(Identifier* ident) {
+llvm::Value* Generator::VisitIdentifier(Identifier* ident) {
 
 }
-llvm::Value* VisitObject(Object* obj) {
+llvm::Value* Generator::VisitObject(Object* obj) {
 
 }
-llvm::Value* VisitConstant(Constant* cons) {
+llvm::Value* Generator::VisitConstant(Constant* cons) {
 
 }
-llvm::Value* VisitTempVar(TempVar* tempVar) {
+llvm::Value* Generator::VisitTempVar(TempVar* tempVar) {
 
 }
 
-llvm::Value* VisitDeclaration(Declaration* init) {
+llvm::Value* Generator::VisitVarDeclaration(Declaration* init) {
 
 }
-llvm::Value* VisitIfStmt(IfStmt* ifStmt) {
+llvm::Value* Generator::VisitIfStmt(IfStmt* ifStmt) {
 
 }
-llvm::Value* VisitJumpStmt(JumpStmt* jumpStmt) {
+llvm::Value* Generator::VisitJumpStmt(JumpStmt* jumpStmt) {
 
 }
-llvm::Value* VisitReturnStmt(ReturnStmt* returnStmt) {
+llvm::Value* Generator::VisitReturnStmt(ReturnStmt* returnStmt) {
 
 }
-llvm::Value* VisitLabelStmt(LabelStmt* labelStmt) {
+llvm::Value* Generator::VisitLabelStmt(LabelStmt* labelStmt) {
 
 }
-llvm::Value* VisitEmptyStmt(EmptyStmt* emptyStmt) {
+llvm::Value* Generator::VisitEmptyStmt(EmptyStmt* emptyStmt) {
 
 }
-llvm::Value* VisitCompoundStmt(CompoundStmt* compStmt) {
+llvm::Value* Generator::VisitCompoundStmt(CompoundStmt* compStmt) {
 
 }
-llvm::Value* VisitFuncDef(FuncDef* funcDef) {
+llvm::Value* Generator::VisitFuncDef(FuncDef* funcDef) {
+
+}
+llvm::Value* Generator::VisitExpr(Expr* expr){
 
 }

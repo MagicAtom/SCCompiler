@@ -124,14 +124,18 @@ private:
 class BinaryOp:public Expr{
 public:
     virtual void Accept(Visitor* v) override;
-protected:
-    BinaryOp(){}
+    Expr* GetLHS() {return lhs_;}
+    Expr* GetRHS() {return rhs_;}
+    unsigned GetOp() { return op_; }
     virtual bool IsLVal() override{
 
     }
     virtual void TypeChecking() override{
 
     }
+protected:
+    BinaryOp(Expr* lhs, Expr* rhs,unsigned op):
+        lhs_(lhs),rhs_(rhs),op_(op){}
 private:
     Expr* lhs_;
     Expr* rhs_;

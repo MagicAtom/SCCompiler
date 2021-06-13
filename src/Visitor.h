@@ -56,7 +56,7 @@ public:
   virtual llvm::Value* VisitConstant(Constant* cons) = 0;
   virtual llvm::Value* VisitTempVar(TempVar* tempVar) = 0;
 
-  virtual llvm::Value* VisitDeclaration(Declaration* init) = 0;
+  virtual llvm::Value* VisitVarDeclaration(Declaration* init) = 0;
   virtual llvm::Value* VisitIfStmt(IfStmt* ifStmt) = 0;
   virtual llvm::Value* VisitJumpStmt(JumpStmt* jumpStmt) = 0;
   virtual llvm::Value* VisitReturnStmt(ReturnStmt* returnStmt) = 0;
