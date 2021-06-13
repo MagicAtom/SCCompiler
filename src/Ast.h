@@ -15,11 +15,10 @@ class ConditionalOp;
 class FuncCall;
 class TempVar;
 class Constant;
-class Compound; // 复合类型
+class CompoundStmt; // 复合类型
 
 class Identifier;
-class Object;
-class Declaration;
+class VarDeclaration;
 class Enumerator;
 
 // Stmt
@@ -63,8 +62,13 @@ private:
 
 class Expr:public Stmt{
 public:
+    Expr(Token* tok):token_(tok){ }
     virtual void Accept(Visitor* v);
     virtual ~Expr(){};
+    virtual bool IsLVal() = 0;
+    virtual void TypeChecking() = 0;
+private:
+    Token* token_;
 };
 
 class JumpStmt : public Stmt {
@@ -105,20 +109,15 @@ private:
     Expr* expr_;
 };
 
+/* Array, struct, union, enum and so on, but we have enumerator */
 class CompoundStmt:public Stmt{
 public:
+    using StmtList = std::vector<Stmt>;
+    StmtList& GetStmts() { return stmtlist_; }
 protected:
+    CompoundStmt(const StmtList& stmts):stmtlist_(stmts){}
 private:
-};
-
-class FuncDef:public Stmt{
-public:
-    virtual void Accept(Visitor* v) override;
-protected:
-    FuncDef(Identifier* ident,LabelStmt* label):idt_(ident),label_(label){}
-private:
-    LabelStmt* label_;
-    Identifier* idt_;
+    StmtList stmtlist_;
 };
 
 // Expressions
@@ -127,14 +126,26 @@ public:
     virtual void Accept(Visitor* v) override;
 protected:
     BinaryOp(){}
+    virtual bool IsLVal() override{
+
+    }
+    virtual void TypeChecking() override{
+
+    }
 private:
-    Expr* lhs_,rhs_;
-    int op_;
+    Expr* lhs_;
+    Expr* rhs_;
+    unsigned op_;
 };
 
+/* "++" "&" "+" "-" "~" "!" */
 class UnaryOp : public Expr{
 public:
     virtual void Accept(Visitor* v) override;
+    virtual bool IsVal();
+    virtual void TypeChecking() override{
+
+    }
 protected:
     int op_;
     Expr* operand_;
@@ -143,11 +154,21 @@ protected:
 class ConditionalOp:public Expr{
 public:
     virtual void Accept(Visitor* v) override;
+    virtual bool IsLVal() {return false;}
+    virtual void TypeChecking() override;
+protected:
+    ConditionalOp(Expr* cond,Expr* true_expr,Expr* false_expr):
+        cond_(cond),true_expr_(true_expr),false_expr_(false_expr){}
 private:
+    Expr* cond_;
+    Expr* true_expr_;
+    Expr* false_expr_;
 };
 class FuncCall:public Expr{
 public:
     virtual void Accept(Visitor* v) override;
+    virtual bool IsLVal(){return false;} ;
+    void TypeChecking();
 protected:
     FuncCall(Identifier* func,LabelStmt* label):func_(func),label_(label){}
 private:
@@ -168,7 +189,9 @@ private:
 class Constant:public Expr{
 public:
     virtual void Accept(Visitor* v) override;
+    bool IsLVal() {return false;}
     void SetGlobal(){global_ = true;}
+    virtual void TypeChecking() { }
 protected:
     Constant(Type* type){
 
@@ -187,21 +210,34 @@ protected:
 class Identifier:public Expr{
 public:
     virtual void Accept(Visitor* v) override;
+    virtual bool IsLVal() { }
+    virtual void TypeChecking() {}
 protected:
     Identifier(std::string* name):name_(name){};
 private:
     std::string* name_;
 };
 
-class Declaration:public Expr{
+class VarDeclaration:public Stmt{
 public:
     virtual void Accept(Visitor* v) override;
+    virtual bool IsLVal() {return false;}
+    virtual void TypeChecking() {}
+    void SetGlobal(){
+        global_ = true;
+    }
+protected:
+    VarDeclaration(Identifier* name,Constant* cst,bool global):
+        name_(name),value_(value_),global_(global){}
 private:
+    Identifier* name_;
+    Constant* value_;
+    bool global_;
 };
 
 class Enumerator:public Identifier{
 public:
-    virtual  void Accept(Visitor* v) override;
+    virtual void Accept(Visitor* v) override;
 protected:
     //Enumerator(Constant* cst):constant_(cst){}
     Constant* constant_;

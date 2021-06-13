@@ -7,63 +7,55 @@ void Generator::Gen(){
     this->module_->dump();
 }
 
-#include "Gen.h"
-
-void Generator::Gen(){
-    for(int i = 0; i < roots_.size();i++){
-
-    }
-    this->module_->dump();
-}
-
-void Generator::VisitBinaryOp(BinaryOp* binary){
+llvm::Value* VisitBinaryOp(BinaryOp* binary) {
 
 }
-void Generator::VisitUnaryOp(UnaryOp* unary) {
-
-}
-void Generator::VisitConditionalOp(ConditionalOp* cond){
-
-}
-void Generator::VisitFuncCall(FuncCall* funcCall) {
-
-}
-void Generator::VisitEnumerator(Enumerator* enumer) {
-
-}
-void Generator::VisitIdentifier(Identifier* ident){
-
-}
-void Generator::VisitObject(Object* obj){
-
-}
-void Generator::VisitConstant(Constant* cons) {
-
-}
-void Generator::VisitTempVar(TempVar* tempVar) {
+llvm::Value* VisitUnaryOp(UnaryOp* unary) {
 
 };
-void Generator::VisitDeclaration(Declaration* init) {
+llvm::Value* VisitConditionalOp(ConditionalOp* cond) {
 
 }
-void Generator::VisitIfStmt(IfStmt* ifStmt) {
+llvm::Value* VisitFuncCall(FuncCall* funcCall) {
 
 }
-void Generator::VisitJumpStmt(JumpStmt* jumpStmt) {
+llvm::Value* VisitEnumerator(Enumerator* enumer) {
 
 }
-void Generator::VisitReturnStmt(ReturnStmt* returnStmt) {
+llvm::Value* VisitIdentifier(Identifier* ident) {
 
 }
-void Generator::VisitLabelStmt(LabelStmt* labelStmt){
+llvm::Value* VisitObject(Object* obj) {
 
 }
-void Generator::VisitEmptyStmt(EmptyStmt* emptyStmt) {
+llvm::Value* VisitConstant(Constant* cons) {
 
 }
-void Generator::VisitCompoundStmt(CompoundStmt* compStmt){
+llvm::Value* VisitTempVar(TempVar* tempVar) {
 
 }
-void Generator::VisitFuncDef(FuncDef* funcDef) {
+
+llvm::Value* VisitDeclaration(Declaration* init) {
+
+}
+llvm::Value* VisitIfStmt(IfStmt* ifStmt) {
+
+}
+llvm::Value* VisitJumpStmt(JumpStmt* jumpStmt) {
+
+}
+llvm::Value* VisitReturnStmt(ReturnStmt* returnStmt) {
+
+}
+llvm::Value* VisitLabelStmt(LabelStmt* labelStmt) {
+
+}
+llvm::Value* VisitEmptyStmt(EmptyStmt* emptyStmt) {
+
+}
+llvm::Value* VisitCompoundStmt(CompoundStmt* compStmt) {
+
+}
+llvm::Value* VisitFuncDef(FuncDef* funcDef) {
 
 }

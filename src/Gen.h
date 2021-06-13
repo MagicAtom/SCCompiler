@@ -24,24 +24,24 @@ public:
     }
     void Gen();
 public: // visitor
-    virtual void VisitBinaryOp(BinaryOp* binary) = 0;
-    virtual void VisitUnaryOp(UnaryOp* unary) = 0;
-    virtual void VisitConditionalOp(ConditionalOp* cond) = 0;
-    virtual void VisitFuncCall(FuncCall* funcCall) = 0;
-    virtual void VisitEnumerator(Enumerator* enumer) = 0;
-    virtual void VisitIdentifier(Identifier* ident) = 0;
-    virtual void VisitObject(Object* obj) = 0;
-    virtual void VisitConstant(Constant* cons) = 0;
-    virtual void VisitTempVar(TempVar* tempVar) = 0;
+    virtual llvm::Value* VisitBinaryOp(BinaryOp* binary) override;
+    virtual llvm::Value* VisitUnaryOp(UnaryOp* unary) override;
+    virtual llvm::Value* VisitConditionalOp(ConditionalOp* cond) override;
+    virtual llvm::Value* VisitFuncCall(FuncCall* funcCall) override;
+    virtual llvm::Value* VisitEnumerator(Enumerator* enumer) override;
+    virtual llvm::Value* VisitIdentifier(Identifier* ident) override;
+    virtual llvm::Value* VisitObject(Object* obj) override;
+    virtual llvm::Value* VisitConstant(Constant* cons) override;
+    virtual llvm::Value* VisitTempVar(TempVar* tempVar) override;
 
-    virtual void VisitDeclaration(Declaration* init) = 0;
-    virtual void VisitIfStmt(IfStmt* ifStmt) = 0;
-    virtual void VisitJumpStmt(JumpStmt* jumpStmt) = 0;
-    virtual void VisitReturnStmt(ReturnStmt* returnStmt) = 0;
-    virtual void VisitLabelStmt(LabelStmt* labelStmt) = 0;
-    virtual void VisitEmptyStmt(EmptyStmt* emptyStmt) = 0;
-    virtual void VisitCompoundStmt(CompoundStmt* compStmt) = 0;
-    virtual void VisitFuncDef(FuncDef* funcDef) = 0;
+    virtual llvm::Value* VisitDeclaration(Declaration* init) override;
+    virtual llvm::Value* VisitIfStmt(IfStmt* ifStmt) override;
+    virtual llvm::Value* VisitJumpStmt(JumpStmt* jumpStmt) override;
+    virtual llvm::Value* VisitReturnStmt(ReturnStmt* returnStmt) override;
+    virtual llvm::Value* VisitLabelStmt(LabelStmt* labelStmt) override;
+    virtual llvm::Value* VisitEmptyStmt(EmptyStmt* emptyStmt) override;
+    virtual llvm::Value* VisitCompoundStmt(CompoundStmt* compStmt) override;
+    virtual llvm::Value* VisitFuncDef(FuncDef* funcDef) override;
 private:
     static Parser* parser_;
     std::vector<ASTNode*> roots_; // roots of each block

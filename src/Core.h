@@ -19,6 +19,8 @@ typedef struct {
     int nalloc;
 } Vector;
 
+// TODO: Another type maybe needed.
+
 typedef struct Type {
     int kind;
     int size;
@@ -30,7 +32,6 @@ typedef struct Type {
     // array length
     int len;
     // struct
-    Dict *fields;
     int offset;
     bool is_struct; // true if struct, false if union
     // bitfield
