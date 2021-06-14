@@ -62,6 +62,7 @@ private:
 
 class Expr:public Stmt{
 public:
+    Expr() {}
     Expr(Token* tok):token_(tok){ }
     virtual void Accept(Visitor* v);
     virtual ~Expr(){};
@@ -208,7 +209,7 @@ protected:
     };
     Identifier *name;
     bool global_;
-    Type * type_;
+    Type* type_;
 };
 
 class Identifier:public Expr{
