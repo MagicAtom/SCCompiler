@@ -18,7 +18,7 @@ struct CodeLocation{
 };
 
 using HideSet = std::set<std::string>;
-using TokenList = list<const Token*>;
+using TokenList = std::list<const Token*>;
 
 class Token{
     friend class Scanner;

@@ -3,6 +3,7 @@
 
 #include "Ast.h"
 #include "Visitor.h"
+#include "Core.h"
 #include <iostream>
 #include <memory>
 #include <map>
@@ -45,6 +46,9 @@ public: // visitor
     virtual llvm::Value* VisitFuncDef(FuncDef* funcDef) override;
 
     llvm::Value* VisitExpr(Expr* expr);
+    llvm::Value* VisitStmt(Stmt* stmt);
+private:
+    llvm::Function* GetTopFunc();
 private:
     static Parser* parser_;
     std::vector<ASTNode*> roots_; // roots of each block

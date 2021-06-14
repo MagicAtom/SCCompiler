@@ -1,8 +1,9 @@
 #ifndef SCC_AST_H
 #define SCC_AST_H
 
-#include "Core.h"
+#include "Token.h"
 #include <string>
+#include <iostream>
 // Forward Definition
 class Generator;
 class Visitor;
@@ -30,6 +31,28 @@ class EmptyStmt;
 class ReturnStmt;
 using ParamList = std::vector<Expr>;
 
+enum BinaryOperator{
+    _ASSIGNMENT,
+    _ADD,
+    _MINUS,
+    _MUL,
+    _DIV,
+    _EQ, // ==
+    _NEQ, // !=
+    _LT, // <
+    _LE, // <=
+    _GT, // >
+    _GE, // >=
+    _OR, // ||
+    _MOD, // %
+    _AND, // &&
+    _XOR,
+    // TODO: below is not support yet
+    _DOT, //. member of
+    _COMMA, // ,
+    _PAREN // [
+};
+
 class ASTNode{
 public:
     virtual ~ASTNode();
@@ -45,6 +68,7 @@ public:
 };
 
 class IfStmt : public Stmt{
+    friend class Generator;
 public:
     ~IfStmt(){
         delete cond_;
@@ -61,6 +85,7 @@ private:
 };
 
 class Expr:public Stmt{
+    friend class Generator;
 public:
     Expr() {}
     Expr(Token* tok):token_(tok){ }
@@ -73,6 +98,7 @@ private:
 };
 
 class JumpStmt : public Stmt {
+    friend class Generator;
 public:
     virtual void Accept(Visitor* v) override;
     virtual ~JumpStmt(){};
@@ -80,6 +106,7 @@ protected:
     JumpStmt(LabelStmt* label):label_(label) {}
 private:
     LabelStmt* label_;
+    int label_tag;
 };
 
 class LabelStmt:public Stmt{
@@ -136,14 +163,24 @@ public:
     }
 protected:
     BinaryOp(Expr* lhs, Expr* rhs,unsigned op):
-        lhs_(lhs),rhs_(rhs),op_(op){}
+        lhs_(lhs),rhs_(rhs),op_(op){
+
+    }
+
 private:
     Expr* lhs_;
     Expr* rhs_;
     unsigned op_;
 };
 
-/* "++" "&" "+" "-" "~" "!" */
+/*
+ * "++"
+ * "&"
+ * "+"
+ * "-"
+ * "~"
+ * "!"
+ */
 class UnaryOp : public Expr{
 public:
     virtual void Accept(Visitor* v) override;
@@ -156,6 +193,7 @@ protected:
     Expr* operand_;
 };
 
+/* ? true_expr : false_expr ;  */
 class ConditionalOp:public Expr{
 public:
     virtual void Accept(Visitor* v) override;

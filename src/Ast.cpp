@@ -25,9 +25,9 @@ void Identifier::Accept(Visitor* v){
     v->VisitIdentifier(this);
 }
 
-void Declaration::Accept(Visitor *v) {
-    v->VisitDeclaration(this);
-};
+//void Declaration::Accept(Visitor *v) {
+//    v->VisitDeclaration(this);
+//};
 void Enumerator::Accept(Visitor *v) {
     v->VisitEnumerator(this);
 }
