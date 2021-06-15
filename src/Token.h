@@ -194,7 +194,7 @@ public:
     ws_ = example.ws_;
     loc_ = example.loc_;
     str_ = example.str_;
-    hs_ = example.hs_? new HideSet(*other.hs_) : nullptr;
+    hs_ = example.hs_? new HideSet(*example.hs_) : nullptr;
     return *this;
   }
   virtual ~Token();
@@ -247,18 +247,207 @@ public:
   { "_Thread_local", Token::THREAD },
 };
 
-const unordered_map<int, const char*> 
+  const static unordered_map<int, const char*> Token::TagLexMap{
+    {'(',"("},
+    {')',")"},
+    {'[',"["},
+    {']',"]"},
+    { ':', ":" },
+    { ',', "," },
+    { ';', ";" },
+    { '+', "+" },
+    { '-', "-" },
+    { '*', "*" },
+    { '/', "/" },
+    { '|', "|" },
+    { '&', "&" },
+    { '<', "<" },
+    { '>', ">" },
+    { '=', "=" },
+    { '.', "." },
+    { '%', "%" },
+    { '{', "{" },
+    { '}', "}" },
+    { '^', "^" },
+    { '~', "~" },
+    { '!', "!" },
+    { '?', "?" },
+    { '#', "#" },
+
+    { Token::DSHARP, "##" },
+    { Token::PTR, "->" },
+    { Token::INC, "++" },
+    { Token::DEC, "--" },
+    { Token::LEFT, "<<" },
+    { Token::RIGHT, ">>" },
+    { Token::LE, "<=" },
+    { Token::GE, ">=" },
+    { Token::EQ, "==" },
+    { Token::NE, "!=" },
+    { Token::LOGICAL_AND, "&&" },
+    { Token::LOGICAL_OR, "||" },
+    { Token::MUL_ASSIGN, "*=" },
+    { Token::DIV_ASSIGN, "/=" },
+    { Token::MOD_ASSIGN, "%=" },
+    { Token::ADD_ASSIGN, "+=" },
+    { Token::SUB_ASSIGN, "-=" },
+    { Token::LEFT_ASSIGN, "<<=" },
+    { Token::RIGHT_ASSIGN, ">>=" },
+    { Token::AND_ASSIGN, "&=" },
+    { Token::XOR_ASSIGN, "^=" },
+    { Token::OR_ASSIGN, "|=" },
+    { Token::ELLIPSIS, "..." },
+
+    { Token::AUTO, "auto" },
+    { Token::BREAK, "break" },
+    { Token::CASE, "case" },
+    { Token::CHAR, "char" },
+    { Token::CONST, "const" },
+    { Token::CONTINUE, "continue" },
+    { Token::DEFAULT, "default" },
+    { Token::DO, "do" },
+    { Token::DOUBLE, "double" },
+    { Token::ELSE, "else" },
+    { Token::ENUM, "enum" },
+    { Token::EXTERN, "extern" },
+    { Token::FLOAT, "float" },
+    { Token::FOR, "for" },
+    { Token::GOTO, "goto" },
+    { Token::IF, "if" },
+    { Token::INLINE, "inline" },
+    { Token::INT, "int" },
+    { Token::LONG, "long" },
+    { Token::SIGNED, "signed" },
+    { Token::UNSIGNED, "unsigned" },
+    { Token::REGISTER, "register" },
+    { Token::RESTRICT, "restrict" },
+    { Token::RETURN, "return" },
+    { Token::SHORT, "short" },
+    { Token::SIZEOF, "sizeof" },
+    { Token::STATIC, "static" },
+    { Token::STRUCT, "struct" },
+    { Token::SWITCH, "switch" },
+    { Token::TYPEDEF, "typedef" },
+    { Token::UNION, "union" },
+    { Token::VOID, "void" },
+    { Token::VOLATILE, "volatile" },
+    { Token::WHILE, "while" },
+    { Token::ALIGNAS, "_Alignas" },
+    { Token::ALIGNOF, "_Alignof" },
+    { Token::ATOMIC, "_Atomic" },
+    { Token::ATTRIBUTE, "__attribute__" },
+    { Token::BOOL, "_Bool" },
+    { Token::COMPLEX, "_Complex" },
+    { Token::GENERIC, "_Generic" },
+    { Token::IMAGINARY, "_Imaginary" },
+    { Token::NORETURN, "_Noreturn" },
+    { Token::STATIC_ASSERT, "_Static_assert" },
+    { Token::THREAD, "_Thread_local" },
+
+    { Token::END, "(eof)" },
+    { Token::IDENTIFIER, "(identifier)" },
+    { Token::CONSTANT, "(constant)" },
+    { Token::LITERAL, "(string literal)" },
+  };
 
   static int KeyWordTag(const string& key) {
     auto kw = kwTypeMap.find(key);
+    if(kwTypeMap.end() == kw)
+      return Token::NOTOK;
+    return kw->second;
+  }
+
+  static bool IsKeyWord(const string& name);
+  static bool IsKeyWord(int tag){
+    return CONST <= tag && tag<IDENTIFIER;
+  }
+  bool IsKeyWord() const{
+    return IsKeyWord(tag_);
+  }
+  bool IsPuncuator() const{
+    return 0 <= tag_ && tag_ <= ELLIPSIS;
+  }
+  bool IsLiteral() const{
+    return tag_ == LITERAL;
+  }
+  bool IsConstant() const{
+    return CONSTANT <= tag_ && tag_ <= F_CONSTANT;
+  }
+  bool IsIdentifier() const{
+    return IDENTIFIER == tag_;
+  }
+  bool IsEOF() const{
+    return tag_== END;
+  }
+  bool IsTypeSpecQual() const{
+    return CONST <= tag_ && tag_ <= ENUM;
+  }  
+  bool IsDecl() const{
+    return CONST <= tag_ && tag_ <= REGISTER;
+  }
+  static const char* MyLex(int tag){
+    auto iter = TagLexMap.find(tag);
+    if(iter == TagLexMap.end())
+      return nullptr;
+    
+    return iter->second;
+  }
+
+private:
+  explicit Token(int tag): tag_(tag){}
+  Token(int tag, const CodeLocation& loc, const string&str, bool ws=false)
+  : tag_(tag),ws_(ws),loc_(loc),str_(str){}
+
+  Token(const Token& example){
+    *this = example;
+  }
+  
+};
+
+class TokenSequence{
+  friend class Preprocessor;
+
+public :
+  explicit TokenSequence(Token* tok){
+    TokenSequence();
+    InsertBack(tok);
+  }
+  explicit TokenSequence(TokenList* toklist)
+    : tokenlist_(toklist),
+      head_(toklist->begin()),
+      end_(toklist->end()){}
+  TokenSequence():  tokenlist_(new TokenList()),
+                    head_(tokenlist_->begin()),
+                    end_(tokenlist_->end()) {}
+                  
+  TokenSequence(TokenList* toklist,TokenList::iterator head,TokenList::iterator end):
+                tokenlist_(toklist),head_(head),end_(end) {}
+  const TokenSequence& operator=(const TokenSequence& example){
+    tokenlist_ = example.tokenlist_;
+    head_ = example.head_;
+    end_ = example.end_;
+    return *this;
+  }
+
+  void UpdateHeadLocation(const CodeLocation& loc){
+    assert(!Empty());
+    auto tok = const_cast<Token*>(Peek());
+  }
+
+  void FinalizeSubset(bool leadingws, const HideSet& hs){
 
   }
 
   
+
+
+private :
+  TokenList* tokenlist_;
+  mutable TokenList::iterator head_;
+  TokenList::iterator end_;
+  Parser* parser_{nullptr};
+  int exceed_end {0};
+
 };
-
-
-
-
 
 #endif
