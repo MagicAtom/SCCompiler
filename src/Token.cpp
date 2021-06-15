@@ -2,8 +2,9 @@
 #include"Parser.h"
 #include"Pool.h"
 
+static PoolImp<Token> tokenPool;
 
-  const static unordered_map<string,int > kwTypeMap{
+const static unordered_map<string,int > kwTypeMap{
   { "auto", Token::AUTO },
   { "break", Token::BREAK },
   { "case", Token::CASE },
@@ -51,7 +52,7 @@
   { "_Thread_local", Token::THREAD },
 };
 
-  const unordered_map<int, const char*> Token::TagLexMap{
+const unordered_map<int, const char*> Token::TagLexMap{
     {'(',"("},
     {')',")"},
     {'[',"["},
@@ -156,5 +157,5 @@
 
 
   Token* Token::New(int tag){
-      return new()
+      return new(token)
   }
