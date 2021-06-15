@@ -1,8 +1,14 @@
 #ifndef _WINDS_TOKEN_H
 #define _WINDS_TOKEN_H
 #include"Core.h"
+#include"Parser.h"
+#include<stdio.h>
 #include<unordered_map>
 #include<set>
+#include<list>
+#include<cassert>
+#include<iostream>
+#include<cstring>
 
 using namespace std;
 struct CodeLocation{
@@ -186,8 +192,9 @@ public:
   HideSet* hs_ { nullptr };
 
 
-  static Token* Create(int tag, const CodeLocation& loc, const string& str, bool ws=false);
-  static Token* Create(int tag);
+  static Token* New(int tag, const CodeLocation& loc, const string& str, bool ws=false);
+  static Token* New(int tag);
+  static Token* New(const Token& example);
 
   Token& operator=(const Token& example){
     tag_ = example.tag_;
@@ -199,156 +206,9 @@ public:
   }
   virtual ~Token();
 
-  const static unordered_map<string,int > kwTypeMap{
-  { "auto", Token::AUTO },
-  { "break", Token::BREAK },
-  { "case", Token::CASE },
-  { "char", Token::CHAR },
-  { "const", Token::CONST },
-  { "continue", Token::CONTINUE },
-  { "default", Token::DEFAULT },
-  { "do", Token::DO },
-  { "double", Token::DOUBLE },
-  { "else", Token::ELSE },
-  { "enum", Token::ENUM },
-  { "extern", Token::EXTERN },
-  { "float", Token::FLOAT },
-  { "for", Token::FOR },
-  { "goto", Token::GOTO },
-  { "if", Token::IF },
-  { "inline", Token::INLINE },
-  { "int", Token::INT },
-  { "long", Token::LONG },
-  { "signed", Token::SIGNED },
-  { "unsigned", Token::UNSIGNED },
-  { "register", Token::REGISTER },
-  { "restrict", Token::RESTRICT },
-  { "return", Token::RETURN },
-  { "short", Token::SHORT },
-  { "sizeof", Token::SIZEOF },
-  { "static", Token::STATIC },
-  { "struct", Token::STRUCT },
-  { "switch", Token::SWITCH },
-  { "typedef", Token::TYPEDEF },
-  { "union", Token::UNION },
-  { "void", Token::VOID },
-  { "volatile", Token::VOLATILE },
-  { "while", Token::WHILE },
-  { "_Alignas", Token::ALIGNAS },
-  { "_Alignof", Token::ALIGNOF },
-  { "_Atomic", Token::ATOMIC },
-  { "__attribute__", Token::ATTRIBUTE },
-  { "_Bool", Token::BOOL },
-  { "_Complex", Token::COMPLEX },
-  { "_Generic", Token::GENERIC },
-  { "_Imaginary", Token::IMAGINARY },
-  { "_Noreturn", Token::NORETURN },
-  { "_Static_assert", Token::STATIC_ASSERT },
-  { "_Thread_local", Token::THREAD },
-};
+  const static unordered_map<string,int > kwTypeMap;
 
-  const static unordered_map<int, const char*> Token::TagLexMap{
-    {'(',"("},
-    {')',")"},
-    {'[',"["},
-    {']',"]"},
-    { ':', ":" },
-    { ',', "," },
-    { ';', ";" },
-    { '+', "+" },
-    { '-', "-" },
-    { '*', "*" },
-    { '/', "/" },
-    { '|', "|" },
-    { '&', "&" },
-    { '<', "<" },
-    { '>', ">" },
-    { '=', "=" },
-    { '.', "." },
-    { '%', "%" },
-    { '{', "{" },
-    { '}', "}" },
-    { '^', "^" },
-    { '~', "~" },
-    { '!', "!" },
-    { '?', "?" },
-    { '#', "#" },
-
-    { Token::DSHARP, "##" },
-    { Token::PTR, "->" },
-    { Token::INC, "++" },
-    { Token::DEC, "--" },
-    { Token::LEFT, "<<" },
-    { Token::RIGHT, ">>" },
-    { Token::LE, "<=" },
-    { Token::GE, ">=" },
-    { Token::EQ, "==" },
-    { Token::NE, "!=" },
-    { Token::LOGICAL_AND, "&&" },
-    { Token::LOGICAL_OR, "||" },
-    { Token::MUL_ASSIGN, "*=" },
-    { Token::DIV_ASSIGN, "/=" },
-    { Token::MOD_ASSIGN, "%=" },
-    { Token::ADD_ASSIGN, "+=" },
-    { Token::SUB_ASSIGN, "-=" },
-    { Token::LEFT_ASSIGN, "<<=" },
-    { Token::RIGHT_ASSIGN, ">>=" },
-    { Token::AND_ASSIGN, "&=" },
-    { Token::XOR_ASSIGN, "^=" },
-    { Token::OR_ASSIGN, "|=" },
-    { Token::ELLIPSIS, "..." },
-
-    { Token::AUTO, "auto" },
-    { Token::BREAK, "break" },
-    { Token::CASE, "case" },
-    { Token::CHAR, "char" },
-    { Token::CONST, "const" },
-    { Token::CONTINUE, "continue" },
-    { Token::DEFAULT, "default" },
-    { Token::DO, "do" },
-    { Token::DOUBLE, "double" },
-    { Token::ELSE, "else" },
-    { Token::ENUM, "enum" },
-    { Token::EXTERN, "extern" },
-    { Token::FLOAT, "float" },
-    { Token::FOR, "for" },
-    { Token::GOTO, "goto" },
-    { Token::IF, "if" },
-    { Token::INLINE, "inline" },
-    { Token::INT, "int" },
-    { Token::LONG, "long" },
-    { Token::SIGNED, "signed" },
-    { Token::UNSIGNED, "unsigned" },
-    { Token::REGISTER, "register" },
-    { Token::RESTRICT, "restrict" },
-    { Token::RETURN, "return" },
-    { Token::SHORT, "short" },
-    { Token::SIZEOF, "sizeof" },
-    { Token::STATIC, "static" },
-    { Token::STRUCT, "struct" },
-    { Token::SWITCH, "switch" },
-    { Token::TYPEDEF, "typedef" },
-    { Token::UNION, "union" },
-    { Token::VOID, "void" },
-    { Token::VOLATILE, "volatile" },
-    { Token::WHILE, "while" },
-    { Token::ALIGNAS, "_Alignas" },
-    { Token::ALIGNOF, "_Alignof" },
-    { Token::ATOMIC, "_Atomic" },
-    { Token::ATTRIBUTE, "__attribute__" },
-    { Token::BOOL, "_Bool" },
-    { Token::COMPLEX, "_Complex" },
-    { Token::GENERIC, "_Generic" },
-    { Token::IMAGINARY, "_Imaginary" },
-    { Token::NORETURN, "_Noreturn" },
-    { Token::STATIC_ASSERT, "_Static_assert" },
-    { Token::THREAD, "_Thread_local" },
-
-    { Token::END, "(eof)" },
-    { Token::IDENTIFIER, "(identifier)" },
-    { Token::CONSTANT, "(constant)" },
-    { Token::LITERAL, "(string literal)" },
-  };
+  const static unordered_map<int, const char*> Token::TagLexMap;
 
   static int KeyWordTag(const string& key) {
     auto kw = kwTypeMap.find(key);
@@ -404,6 +264,8 @@ private:
   
 };
 
+
+
 class TokenSequence{
   friend class Preprocessor;
 
@@ -432,19 +294,151 @@ public :
   void UpdateHeadLocation(const CodeLocation& loc){
     assert(!Empty());
     auto tok = const_cast<Token*>(Peek());
+    tok->loc_ = loc;
   }
 
   void FinalizeSubset(bool leadingws, const HideSet& hs){
-
+    auto ts = *this;
+    while(!ts.Empty()){
+      auto tok = const_cast<Token*>(ts.Next());
+      if(!tok->hs_){
+        tok->hs_ = new HideSet(hs);
+      }
+      else 
+        tok->hs_->insert(hs.begin(),hs.end());
+    }
+    //when the token sequence is empty
+    const_cast<Token*>(Peek())->ws_ = leadingws;
   }
+
+  void Copy(const TokenSequence& example){
+    tokenlist_ = new TokenList(example.head_,example.end_);
+    head_ = tokenlist_->begin();
+    end_ = tokenlist_->end();
+    for (auto iter = head_; iter != end_;iter++){
+      *iter = Token::New(**iter);
+    }
+  }
+
+  const Token* Expect(int expect);
+  bool Try(int tag){
+    if(Peek()->tag_ == tag){
+      Next();
+      return true;
+    }
+    return false;
+  }
+
+  bool Test(int tag){
+    return Peek()->tag_ == tag;
+  }
+
+  const Token*Next(){
+    auto ret = Peek();
+    if(!ret->IsEOF()){
+      ++head_;
+      Peek();   //error: skip newline token???
+    }else{
+      ++exceed_end;
+    }
+    return ret;
+  }
+  const Token* Peek() const;
+  const Token* Peek2() {
+    if(Empty())
+    //return TOken::END
+      return Peek();  
+    Next();
+    auto ret = Peek();
+    PutBack();
+    return ret;
+  }
+
+  void PutBack(){
+    assert(head_ != tokenlist_->begin());
+    if(exceed_end > 0){
+      --exceed_end;
+    }else{
+      --head_;
+      if((*head_)->tag_ == Token::NEW_LINE)
+      PutBack();
+    }
+  }
+
+  const Token* Back() const{
+    auto back = end_;
+    return *--back;
+  }
+
+  void PopBack(){
+    assert(!Empty());
+    assert(end_ == tokenlist_->end());
+    auto size_eq = tokenlist_->back()==*head_;
+    tokenlist_->pop_back();
+    end_ = tokenlist_->end();
+    if(size_eq)
+      head_=end_;
+  }
+
+  TokenList::iterator Mark(){
+    return head_;
+  }
+  void ResetTo(TokenList::iterator mark){
+    head_ = mark;
+  }
+  bool Empty() const{
+    return Peek()->tag_ == Token::END;
+  }
+  void InsertBack(TokenSequence& ts){
+    //insert all Tokenlist of ts into this example
+    tokenlist_->splice(end_,*ts.tokenlist_);
+    //update headpointer and endpointer
+    head_=tokenlist_->begin();
+    end_=tokenlist_->end();
+  }
+  void InsertBack(const Token* tok){
+    auto pos = tokenlist_->insert(end_,tok);
+    //update headpointer and endpointer
+    head_=tokenlist_->begin();
+    end_=tokenlist_->end();
+  }
+
+  //preceding newline code
+  void InsertFront(TokenSequence& ts){
+    auto pos = GetInsertFrontPos();
+    tokenlist_->splice(pos,*ts.tokenlist_);
+    head_=tokenlist_->begin();
+  }
+
+  void InsertFront(const Token* tok){
+    auto pos = GetInsertFrontPos();
+    head_=tokenlist_->insert(pos,tok);
+  }
+  bool IsBeginOfLine() const;
+  TokenSequence GetLine();
+  void SetParser(Parser* parser){
+    parser_ = parser;
+  }
+
+  void Print(FILE* fp=stdout) const;
+
 
   
 
-
 private :
+  TokenList::iterator GetInsertFrontPos(){
+    auto pos = head_;
+    if (pos == tokenlist_->begin())
+      return pos;
+    --pos;
+    while(pos != tokenlist_->begin() && (*pos)->tag_ == Token::NEW_LINE)
+      --pos;
+    return ++pos;
+  }
+
   TokenList* tokenlist_;
-  mutable TokenList::iterator head_;
-  TokenList::iterator end_;
+  TokenList::iterator head_ ;
+  TokenList::iterator end_ ;
   Parser* parser_{nullptr};
   int exceed_end {0};
 
