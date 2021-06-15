@@ -10,6 +10,7 @@
 #include <utility>
 
 class Parser;
+class Token;
 
 class Generator:public Visitor{
 public:
@@ -36,19 +37,30 @@ public: // visitor
     virtual llvm::Value* VisitConstant(Constant* cons) override;
     virtual llvm::Value* VisitTempVar(TempVar* tempVar) override;
 
-    virtual llvm::Value* VisitVarDeclaration(Declaration* init) override;
+    virtual llvm::Value* VisitDeclaration(Declaration* init) override;
     virtual llvm::Value* VisitIfStmt(IfStmt* ifStmt) override;
     virtual llvm::Value* VisitJumpStmt(JumpStmt* jumpStmt) override;
     virtual llvm::Value* VisitReturnStmt(ReturnStmt* returnStmt) override;
     virtual llvm::Value* VisitLabelStmt(LabelStmt* labelStmt) override;
     virtual llvm::Value* VisitEmptyStmt(EmptyStmt* emptyStmt) override;
     virtual llvm::Value* VisitCompoundStmt(CompoundStmt* compStmt) override;
-    virtual llvm::Value* VisitFuncDef(FuncDef* funcDef) override;
-
-    llvm::Value* VisitExpr(Expr* expr);
-    llvm::Value* VisitStmt(Stmt* stmt);
+    virtual llvm::Value* VisitFuncDecl(FuncDecl* funcDecl) override;
+private:
+    // TODO: Visual the AST here when gen IR
 private:
     llvm::Function* GetTopFunc();
+    llvm::AllocaInst * GetInst(llvm::Function * function,llvm::StringRef VarName,llvm::Type* type);
+    llvm::Value* FindValue(const std::string name);
+    llvm ::Type* TypeConvert(unsigned type);
+    llvm::Value* VisitExpr(Expr* expr);
+    llvm::Value* VisitStmt(Stmt* stmt);
+
+    llvm::Value* GenAssignment(BinaryOp* binary);    // Binary Operator
+    llvm::Value* GenMemberRefOp(BinaryOp* binary);
+    llvm::Value* GenCommaOp(BinaryOp* binary);
+    llvm::Value* GenInc(UnaryOp* unary,bool prefix); // Unary Op
+    llvm::Value* GenCast(UnaryOp* unary);
+
 private:
     static Parser* parser_;
     std::vector<ASTNode*> roots_; // roots of each block
@@ -59,7 +71,7 @@ private:
     std::vector<llvm::Function*> func_stack_;
     std::vector<llvm::BasicBlock*> basic_blocks_;
     //---------------------------------------------
-    // The EmitFunc need to be implemented by
+    // Below is to set register on ourselves.
     // void EmitFunc(); // A function
     // void EmitDecl(); // global variable
     // Other Emit called by Emit Func() and EmitDecl()

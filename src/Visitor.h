@@ -41,7 +41,7 @@ class ReturnStmt;
 class LabelStmt;
 class EmptyStmt;
 class CompoundStmt;
-class FuncDef;
+class FuncDecl;
 
 class Visitor {
 public:
@@ -56,13 +56,13 @@ public:
   virtual llvm::Value* VisitConstant(Constant* cons) = 0;
   virtual llvm::Value* VisitTempVar(TempVar* tempVar) = 0;
 
-  virtual llvm::Value* VisitVarDeclaration(Declaration* init) = 0;
+  virtual llvm::Value* VisitDeclaration(Declaration* init) = 0;
   virtual llvm::Value* VisitIfStmt(IfStmt* ifStmt) = 0;
   virtual llvm::Value* VisitJumpStmt(JumpStmt* jumpStmt) = 0;
   virtual llvm::Value* VisitReturnStmt(ReturnStmt* returnStmt) = 0;
   virtual llvm::Value* VisitLabelStmt(LabelStmt* labelStmt) = 0;
   virtual llvm::Value* VisitEmptyStmt(EmptyStmt* emptyStmt) = 0;
   virtual llvm::Value* VisitCompoundStmt(CompoundStmt* compStmt) = 0;
-  virtual llvm::Value* VisitFuncDef(FuncDef* funcDef) = 0;
+  virtual llvm::Value* VisitFuncDecl(FuncDecl* funcDecl) = 0;
 };
 #endif 

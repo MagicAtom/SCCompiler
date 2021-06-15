@@ -43,6 +43,6 @@ void LabelStmt::Accept(Visitor *v) {
 void EmptyStmt::Accept(Visitor *v) {
     v->VisitEmptyStmt(this);
 };
-void FuncDef::Accept(Visitor *v) {
-    v->VisitFuncDef(this);
+void FuncDecl::Accept(Visitor *v) {
+    v->VisitFuncDecl(this);
 }

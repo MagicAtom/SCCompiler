@@ -2,8 +2,10 @@
 #define SCC_AST_H
 
 #include "Token.h"
+#include "Visitor.h"
 #include <string>
 #include <iostream>
+
 // Forward Definition
 class Generator;
 class Visitor;
@@ -17,41 +19,26 @@ class FuncCall;
 class TempVar;
 class Constant;
 class CompoundStmt; // 复合类型
-
+class Object;
 class Identifier;
-class VarDeclaration;
+class Declaration;
 class Enumerator;
 
 // Stmt
+class FuncDecl;
 class Stmt;
 class IfStmt;
 class JumpStmt;
 class LabelStmt; // For goto
 class EmptyStmt;
 class ReturnStmt;
-using ParamList = std::vector<Expr>;
+using ParamList = std::vector<Object*>;
 
-enum BinaryOperator{
-    _ASSIGNMENT,
-    _ADD,
-    _MINUS,
-    _MUL,
-    _DIV,
-    _EQ, // ==
-    _NEQ, // !=
-    _LT, // <
-    _LE, // <=
-    _GT, // >
-    _GE, // >=
-    _OR, // ||
-    _MOD, // %
-    _AND, // &&
-    _XOR,
-    // TODO: below is not support yet
-    _DOT, //. member of
-    _COMMA, // ,
-    _PAREN // [
-};
+typedef struct Initializer {
+    Initializer(llvm::Type* type,Expr* expr):type_(type),expr_(expr){}
+    Expr* expr_;
+    llvm::Type* type_;
+}Initializer;
 
 class ASTNode{
 public:
@@ -89,18 +76,19 @@ class Expr:public Stmt{
 public:
     Expr() {}
     Expr(Token* tok):token_(tok){ }
-    virtual void Accept(Visitor* v);
+    void Accept(Visitor* v) override;
     virtual ~Expr(){};
     virtual bool IsLVal() = 0;
     virtual void TypeChecking() = 0;
 private:
     Token* token_;
+    std::string name_;
 };
 
 class JumpStmt : public Stmt {
     friend class Generator;
 public:
-    virtual void Accept(Visitor* v) override;
+    void Accept(Visitor* v) override;
     virtual ~JumpStmt(){};
 protected:
     JumpStmt(LabelStmt* label):label_(label) {}
@@ -118,19 +106,32 @@ protected:
 private:
     int tag_;
 };
-
+class FuncDecl:public Stmt {
+    friend class Generator;
+public:
+    FuncDecl(Identifier* ident,LabelStmt* label,CompoundStmt* body,std::vector<Object*>* params,bool global):
+        ident_(ident),retLabel_(label),params_(params),global_(global){}
+    void Accept(Visitor *v) override;
+private:
+    Identifier* ident_;
+    LabelStmt* retLabel_;
+    CompoundStmt* body_;
+    ParamList * params_;
+    bool global_;
+};
 class EmptyStmt:public Stmt{
 public:
-    virtual void Accept(Visitor* v) override;
+    void Accept(Visitor* v) override;
     virtual ~EmptyStmt();
 protected:
     EmptyStmt(){}
 };
 
 class ReturnStmt:public Stmt{
+    friend class Generator;
 public:
-    virtual ~ReturnStmt(){};
-    virtual void Accept(Visitor* v) override;
+    ~ReturnStmt(){};
+    void Accept(Visitor* v) override;
 protected:
     ReturnStmt(Expr* expr):expr_(expr){}
 private:
@@ -139,6 +140,7 @@ private:
 
 /* Array, struct, union, enum and so on, but we have enumerator */
 class CompoundStmt:public Stmt{
+    friend class Generator;
 public:
     using StmtList = std::vector<Stmt>;
     StmtList& GetStmts() { return stmtlist_; }
@@ -150,15 +152,14 @@ private:
 
 // Expressions
 class BinaryOp:public Expr{
+    friend class Generator;
 public:
-    virtual void Accept(Visitor* v) override;
-    Expr* GetLHS() {return lhs_;}
-    Expr* GetRHS() {return rhs_;}
+    void Accept(Visitor* v) override;
     unsigned GetOp() { return op_; }
-    virtual bool IsLVal() override{
+    bool IsLVal() override{
 
     }
-    virtual void TypeChecking() override{
+    void TypeChecking() override{
 
     }
 protected:
@@ -182,10 +183,11 @@ private:
  * "!"
  */
 class UnaryOp : public Expr{
+    friend class Generator;
 public:
-    virtual void Accept(Visitor* v) override;
+    void Accept(Visitor* v) override;
     virtual bool IsVal();
-    virtual void TypeChecking() override{
+    void TypeChecking() override{
 
     }
 protected:
@@ -195,10 +197,11 @@ protected:
 
 /* ? true_expr : false_expr ;  */
 class ConditionalOp:public Expr{
+    friend class Generator;
 public:
-    virtual void Accept(Visitor* v) override;
+    void Accept(Visitor* v) override;
     virtual bool IsLVal() {return false;}
-    virtual void TypeChecking() override;
+    void TypeChecking() override;
 protected:
     ConditionalOp(Expr* cond,Expr* true_expr,Expr* false_expr):
         cond_(cond),true_expr_(true_expr),false_expr_(false_expr){}
@@ -208,19 +211,24 @@ private:
     Expr* false_expr_;
 };
 class FuncCall:public Expr{
+    friend class Generator;
 public:
-    virtual void Accept(Visitor* v) override;
+    using ArgList = std::vector<Expr*>;
+public:
+    void Accept(Visitor* v) override;
     virtual bool IsLVal(){return false;} ;
     void TypeChecking();
 protected:
-    FuncCall(Identifier* func,LabelStmt* label):func_(func),label_(label){}
+    FuncCall(Identifier* func,LabelStmt* label,std::vector<Expr*>* args):
+        func_(func),retLabel_(label),args_(args){}
 private:
     Identifier* func_;
-    LabelStmt* label_;
+    LabelStmt* retLabel_;
+    ArgList* args_;
 };
 class TempVar:public Expr{
 public:
-    virtual void Accept(Visitor* v) override;
+    void Accept(Visitor* v) override;
     bool IsLVal(){return true;}
 protected:
     TempVar(){
@@ -230,29 +238,28 @@ private:
     int tag_;
 };
 class Constant:public Expr{
+    friend class Generator;
 public:
     virtual void Accept(Visitor* v) override;
     bool IsLVal() {return false;}
-    void SetGlobal(){global_ = true;}
     virtual void TypeChecking() { }
 protected:
-    Constant(Type* type){
-
-    }
-    union{
-        int i_;
-        double ft_;
-        bool tf_;
-        char c_;
-    };
+    Constant(unsigned type, bool global):global_(global),type_(type){}
     Identifier *name;
     bool global_;
-    Type* type_;
+    unsigned type_; // integer,char,double and so on.
+    union Value{
+        int i;
+        double d;
+        float f;
+        char c;
+    };
 };
-
+// Ojbect,struct/enum/union,function,label.
 class Identifier:public Expr{
+    friend class Generator;
 public:
-    virtual void Accept(Visitor* v) override;
+    void Accept(Visitor* v) override;
     virtual bool IsLVal() { }
     virtual void TypeChecking() {}
 protected:
@@ -260,31 +267,40 @@ protected:
 private:
     std::string* name_;
 };
-
-class VarDeclaration:public Stmt{
+// Everything except FuncDecl
+class Declaration:public Stmt{
+    friend class Generator;
 public:
-    virtual void Accept(Visitor* v) override;
+    void Accept(Visitor* v) override;
     virtual bool IsLVal() {return false;}
     virtual void TypeChecking() {}
     void SetGlobal(){
         global_ = true;
     }
 protected:
-    VarDeclaration(Identifier* name,Constant* cst,bool global):
-        name_(name),value_(value_),global_(global){}
+    Declaration(Identifier* name,Object* obj,bool global):
+        name_(name),obj_(obj),global_(global){}
 private:
     Identifier* name_;
-    Constant* value_;
+    Object* obj_;
     bool global_;
+    unsigned type_;
+    // init values needed.
 };
 
 class Enumerator:public Identifier{
 public:
-    virtual void Accept(Visitor* v) override;
+    void Accept(Visitor* v) override;
 protected:
     //Enumerator(Constant* cst):constant_(cst){}
     Constant* constant_;
 };
-
+class Object:public Identifier {
+    friend class Generator;
+public:
+private:
+    Declaration* decl_;
+    bool global_;
+};
 
 #endif 
