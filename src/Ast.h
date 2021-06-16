@@ -2,7 +2,7 @@
 #define SCC_AST_H
 
 #include "Token.h"
-#include "Visitor.h"
+#include "Type.h"
 #include <string>
 #include <iostream>
 
@@ -22,6 +22,8 @@ class CompoundStmt; // 复合类型
 class Object;
 class Identifier;
 class Declaration;
+class VarDeclaration;
+class ConstDeclaration;
 class Enumerator;
 
 // Stmt
@@ -32,12 +34,15 @@ class JumpStmt;
 class LabelStmt; // For goto
 class EmptyStmt;
 class ReturnStmt;
-using ParamList = std::vector<Object*>;
+class Parameter;
+
+using ParamList = std::vector<Parameter*>;
+using IdentList = std::vector<Identifier*>;
 
 typedef struct Initializer {
-    Initializer(llvm::Type* type,Expr* expr):type_(type),expr_(expr){}
+    Initializer(Type* type,Expr* expr):type_(type),expr_(expr){}
     Expr* expr_;
-    llvm::Type* type_;
+    Type* type_;
 }Initializer;
 
 class ASTNode{
@@ -53,7 +58,6 @@ class Stmt : public ASTNode {
 public:
     virtual void Accept(Visitor* v);
 };
-
 class IfStmt : public Stmt{
     friend class Generator;
 public:
@@ -84,7 +88,6 @@ private:
     Token* token_;
     std::string name_;
 };
-
 class JumpStmt : public Stmt {
     friend class Generator;
 public:
@@ -109,15 +112,16 @@ private:
 class FuncDecl:public Stmt {
     friend class Generator;
 public:
-    FuncDecl(Identifier* ident,LabelStmt* label,CompoundStmt* body,std::vector<Object*>* params,bool global):
-        ident_(ident),retLabel_(label),params_(params),global_(global){}
+    FuncDecl(Identifier* ident,CompoundStmt* body,std::vector<Parameter*>* params,Expr* retexpr, bool global):
+        ident_(ident),retexpr_(retexpr),params_(params),global_(global){}
     void Accept(Visitor *v) override;
 private:
     Identifier* ident_;
-    LabelStmt* retLabel_;
+    Type* type_;
     CompoundStmt* body_;
     ParamList * params_;
     bool global_;
+    Expr* retexpr_;
 };
 class EmptyStmt:public Stmt{
 public:
@@ -126,7 +130,6 @@ public:
 protected:
     EmptyStmt(){}
 };
-
 class ReturnStmt:public Stmt{
     friend class Generator;
 public:
@@ -137,7 +140,6 @@ protected:
 private:
     Expr* expr_;
 };
-
 /* Array, struct, union, enum and so on, but we have enumerator */
 class CompoundStmt:public Stmt{
     friend class Generator;
@@ -224,6 +226,7 @@ protected:
 private:
     Identifier* func_;
     LabelStmt* retLabel_;
+
     ArgList* args_;
 };
 class TempVar:public Expr{
@@ -244,10 +247,10 @@ public:
     bool IsLVal() {return false;}
     virtual void TypeChecking() { }
 protected:
-    Constant(unsigned type, bool global):global_(global),type_(type){}
+    Constant(Type* type, bool global):global_(global),type_(type){}
     Identifier *name;
     bool global_;
-    unsigned type_; // integer,char,double and so on.
+    Type* type_; // integer,char,double and so on.
     union Value{
         int i;
         double d;
@@ -267,27 +270,23 @@ protected:
 private:
     std::string* name_;
 };
-// Everything except FuncDecl
-class Declaration:public Stmt{
+class Declaration : public Expr {
     friend class Generator;
 public:
+    Declaration(IdentList* ident,Type* type):idents_(ident),type_(type) {}
+    Declaration(IdentList* ident,Type* type,bool global):idents_(ident),type_(type),global_(global) {}
+    Declaration(IdentList* ident,Type* type,bool global,bool isConst):
+        idents_(ident),type_(type),global_(global),isConst_(isConst) {}
     void Accept(Visitor* v) override;
-    virtual bool IsLVal() {return false;}
-    virtual void TypeChecking() {}
-    void SetGlobal(){
-        global_ = true;
-    }
-protected:
-    Declaration(Identifier* name,Object* obj,bool global):
-        name_(name),obj_(obj),global_(global){}
+    void SetGlobal() { global_ = true;}
+    void SetConst() {isConst_ = true;}
 private:
-    Identifier* name_;
-    Object* obj_;
+    IdentList * idents_;
+    Type* type_;
     bool global_;
-    unsigned type_;
-    // init values needed.
+    bool isStatic_; // Not support yet
+    bool isConst_;
 };
-
 class Enumerator:public Identifier{
 public:
     void Accept(Visitor* v) override;
@@ -295,12 +294,16 @@ protected:
     //Enumerator(Constant* cst):constant_(cst){}
     Constant* constant_;
 };
-class Object:public Identifier {
+class Parameter : public Stmt {
     friend class Generator;
 public:
+    void Accept(Visitor* v) override;
+protected:
+    Parameter(IdentList *il,bool isVar):
+        idents_(il),isVar_(isVar) {}
 private:
-    Declaration* decl_;
-    bool global_;
+    IdentList* idents_;
+    bool isVar_;
+    Type* type_;
 };
-
 #endif 

@@ -24,10 +24,6 @@ void Constant::Accept(Visitor *v) {
 void Identifier::Accept(Visitor* v){
     v->VisitIdentifier(this);
 }
-
-//void Declaration::Accept(Visitor *v) {
-//    v->VisitDeclaration(this);
-//};
 void Enumerator::Accept(Visitor *v) {
     v->VisitEnumerator(this);
 }
@@ -45,4 +41,13 @@ void EmptyStmt::Accept(Visitor *v) {
 };
 void FuncDecl::Accept(Visitor *v) {
     v->VisitFuncDecl(this);
+}
+void Parameter::Accept(Visitor *v) {
+    v->VisitParameter(this);
+}
+void VarDeclaration::Accept(Visitor* v){
+    v->VisitVarDeclaration(this);
+}
+void ConstDeclaration::Accept(Visitor* v) {
+    v->VisitConstDeclaration(this);
 }

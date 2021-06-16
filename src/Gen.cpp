@@ -1,4 +1,5 @@
 #include "Gen.h"
+#include "Type.h"
 
 void Generator::Gen(){
     for(int i = 0; i < roots_.size();i++){
@@ -9,6 +10,7 @@ void Generator::Gen(){
 void Generator::GenExec(){
 
 }
+// Util
 llvm::Function* Generator::GetTopFunc(){
     return func_stack_.back();
 }
@@ -33,20 +35,38 @@ llvm::Value* Generator::FindValue(const std::string name) {
     std::cout << "Find " << name << " in global" << std::endl;
     return result;
 }
-llvm::Type* Generator::TypeConvert(unsigned int type) {
-    switch(type){
-        case Token::INT: return llvm::Type::getInt64PtrTy((*context_));
-        case Token::FLOAT: return llvm::Type::getFloatTy(*context_);
-        case Token::CHAR: return llvm::Type::getInt8PtrTy(*context_);
-        case Token::DOUBLE: return llvm::Type::getDoublePtrTy(*context_);
+llvm::Type* Generator::TypeConvert(Type* type) {
+    unsigned type_id = type->type_;
+    switch(type_id){
+        case SCCType::_INT : return llvm::Type::getInt32Ty((*context_));
+        case SCCType::_FLOAT : return llvm::Type::getFloatTy(*context_);
+        case SCCType::_CHAR : return llvm::Type::getInt8Ty(*context_);
+        case SCCType::_DOUBLE : return llvm::Type::getDoubleTy(*context_);
+        case SCCType::_VOID: return llvm::Type::getVoidTy(*context_);
+        case SCCType::_ARRAY: {
+            // Only fix length array is supported
+            return llvm::ArrayType::get(TypeConvert(type),type->length_);
+        };
+        case SCCType::_STRUCT: ;
         default:
             assert(false);
+    }
+}
+llvm::Type* Generator::PtrTypeConvert(Type *type) {
+    switch(type->type_) {
+        case SCCType::_INT: return llvm::Type::getInt32PtrTy(*context_);
+        case SCCType::_FLOAT: return llvm::Type::getFloatPtrTy(*context_);
+        case SCCType::_DOUBLE: return llvm::Type::getDoubleTy(*context_);
+        case SCCType::_CHAR: return llvm::Type::getInt8PtrTy(*context_);
+        case SCCType::_BOOL: return llvm::Type::getInt1PtrTy(*context_);
+        default: LOG_ERROR("Pointer type not support");
     }
 }
 llvm::AllocaInst *Generator::GetInst(llvm::Function *function, llvm::StringRef VarName, llvm::Type *type) {
     llvm::IRBuilder<> tmp(&function->getEntryBlock(), function->getEntryBlock().begin());
     return tmp.CreateAlloca(type, nullptr, VarName);
 }
+// Visit and gen
 llvm::Value* Generator::VisitBinaryOp(BinaryOp* binary) {
     auto lhs = VisitExpr(binary->lhs_);
     auto rhs = VisitExpr(binary->rhs_);
@@ -147,9 +167,6 @@ llvm::Value* Generator::VisitEnumerator(Enumerator* enumer) {
 llvm::Value* Generator::VisitIdentifier(Identifier* ident) {
     return new llvm::LoadInst(FindValue(*ident->name_),"tmp",false,builder_->GetInsertBlock());
 }
-llvm::Value* Generator::VisitObject(Object* obj) {
-
-}
 llvm::Value* Generator::VisitConstant(Constant* cons) {
     LOG_INFO("Get Constant");
     return new llvm::LoadInst(FindValue(cons->name_));
@@ -158,18 +175,21 @@ llvm::Value* Generator::VisitTempVar(TempVar* tempVar) {
     llvm::Value* res;
     return res;
 }
-llvm::Value* Generator::VisitDeclaration(Declaration* init) {
-    llvm::Value* res = nullptr;
-    // Constant/Variable Decl
-    // Array not support yet.
-    std::string* name = init->name_->name_;
-    llvm::Type* type = TypeConvert(init->type_);
-    if(init->global_){
-        return new llvm::GlobalVariable(module_,type,true,llvm::GlobalValue::ExternalLinkage,,name)
-    } else {
-
+llvm::Value* Generator::VisitDeclaration(Declaration *decl){
+    llvm::Value* alloc = nullptr;
+    llvm::Type* type;
+    for(const auto & id : *(decl->idents_)){
+        if(decl->type_->type_ == SCCType::_ARRAY){
+            // Array not supported yet.
+        }
+        type = TypeConvert(decl->type_);
+        if(decl->global_){
+            alloc = new llvm::GlobalVariable(*module_,type,decl->isConst_,llvm::GlobalValue::InternalLinkage, InitValue(type),*id->name_);
+        } else {
+            alloc = GetInst(GetTopFunc(),*id->name_,type);
+        }
     }
-    return res;
+    return alloc;
 }
 llvm::Value* Generator::VisitIfStmt(IfStmt* ifStmt) {
     // TODO: Label should be add here
@@ -208,13 +228,14 @@ llvm::Value* Generator::VisitJumpStmt(JumpStmt* jumpStmt) {
 llvm::Value* Generator::VisitReturnStmt(ReturnStmt* returnStmt) {
     llvm::Value* res = nullptr;
     if(returnStmt->expr_ != nullptr) {
-
+        VisitExpr(returnStmt->expr_);
     } else {
-
+        builder_->CreateRetVoid();
     }
+    return res;
 }
 llvm::Value* Generator::VisitLabelStmt(LabelStmt* labelStmt) {
-
+    return nullptr;
 }
 llvm::Value* Generator::VisitEmptyStmt(EmptyStmt* emptyStmt) {
     return nullptr;
@@ -230,17 +251,45 @@ llvm::Value* Generator::VisitFuncDecl(FuncDecl* funcDecl) {
     LOG_INFO("Function Declaration");
     // Prototype
     std::vector<llvm::Type*> argTypes;
-    for(auto & argType: *(funcDecl->params_)) {
-        //TODO: Get Types
-        if(){
-            //argTypes.insert(argTypes.end(),argType->)
+    for(const auto & argType: *(funcDecl->params_)) {
+        if(argType->isVar_){
+            argTypes.insert(argTypes.end(),argType->idents_->size(), PtrTypeConvert(argType->type_));
         }
         else {
-
+            argTypes.insert(argTypes.end(),argType->idents_->size(), TypeConvert(argType->type_));
         }
     }
-    VisitCompoundStmt(funcDecl->body_); // Body
+    llvm::FunctionType *FT = llvm::FunctionType::get(TypeConvert(funcDecl->type_),argTypes,false);
+    llvm::Function* function = llvm::Function::Create(FT,llvm::GlobalValue::InternalLinkage,*funcDecl->ident_->name_,module_.get());
+    func_stack_.push_back(function);
 
+    llvm::BasicBlock * newBlock = llvm::BasicBlock::Create(*context_,"entrypoint",function,nullptr);
+    builder_->SetInsertPoint(newBlock);
+
+    llvm::Function::arg_iterator argIt = function->arg_begin();
+    int index = 0;
+    for(const auto & args: *(funcDecl->params_)) {
+        for(const auto arg : *(args->idents_)) {
+            llvm::Value * alloc = nullptr;
+            if(args->isVar_){
+                function->addAttribute(index,llvm::Attribute::NonNull);
+                alloc = builder_->CreateGEP(argIt++,builder_->getInt32(0),*arg->name_);
+            } else {
+                alloc = GetInst(function,*arg->name_,TypeConvert(args->type_));
+            }
+            index++;
+        }
+    }
+    llvm::Value *res = nullptr;
+    if(funcDecl->type_->type_ != SCCType::_VOID){
+        res = GetInst(function,*funcDecl->ident_->name_,TypeConvert(funcDecl->type_));
+    }
+    VisitCompoundStmt(funcDecl->body_); // Body
+    VisitReturnStmt(new ReturnStmt(funcDecl->retexpr_));
+    // builder_->CreateRet(VisitReturnStmt(new ReturnStmt(funcDecl->retexpr_)));
+    func_stack_.pop_back();
+    builder_->SetInsertPoint(&(GetTopFunc())->getBasicBlockList().back());
+    return function;
 }
 llvm::Value* Generator::VisitExpr(Expr* expr){
     expr->Accept(this);

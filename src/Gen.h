@@ -3,7 +3,7 @@
 
 #include "Ast.h"
 #include "Visitor.h"
-#include "Core.h"
+#include "Type.h"
 #include <iostream>
 #include <memory>
 #include <map>
@@ -37,7 +37,6 @@ public: // visitor
     virtual llvm::Value* VisitConstant(Constant* cons) override;
     virtual llvm::Value* VisitTempVar(TempVar* tempVar) override;
 
-    virtual llvm::Value* VisitDeclaration(Declaration* init) override;
     virtual llvm::Value* VisitIfStmt(IfStmt* ifStmt) override;
     virtual llvm::Value* VisitJumpStmt(JumpStmt* jumpStmt) override;
     virtual llvm::Value* VisitReturnStmt(ReturnStmt* returnStmt) override;
@@ -45,16 +44,20 @@ public: // visitor
     virtual llvm::Value* VisitEmptyStmt(EmptyStmt* emptyStmt) override;
     virtual llvm::Value* VisitCompoundStmt(CompoundStmt* compStmt) override;
     virtual llvm::Value* VisitFuncDecl(FuncDecl* funcDecl) override;
+    virtual llvm::Value* VisitDeclaration(Declaration* decl) override;
+
 private:
     // TODO: Visual the AST here when gen IR
 private:
     llvm::Function* GetTopFunc();
     llvm::AllocaInst * GetInst(llvm::Function * function,llvm::StringRef VarName,llvm::Type* type);
     llvm::Value* FindValue(const std::string name);
-    llvm ::Type* TypeConvert(unsigned type);
+    llvm::Type* TypeConvert(Type* type);
+    llvm::Type* PtrTypeConvert(Type* type);
+    llvm::Constant* InitValue(Type* type);
+
     llvm::Value* VisitExpr(Expr* expr);
     llvm::Value* VisitStmt(Stmt* stmt);
-
     llvm::Value* GenAssignment(BinaryOp* binary);    // Binary Operator
     llvm::Value* GenMemberRefOp(BinaryOp* binary);
     llvm::Value* GenCommaOp(BinaryOp* binary);
