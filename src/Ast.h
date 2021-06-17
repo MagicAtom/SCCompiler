@@ -95,11 +95,20 @@ class ForExpr : public Expr{
     friend class Generator;
 public:
     void Accept(Visitor *v) override;
+    ForExpr(Expr* start,Expr* end,Expr* value, Stmt* body,bool add):
+        start_(start),end_(end),value_(value),body_(body),isAdd(add){}
 private:
-    Expr* start_,*end_,*step,*body,*value;
+    bool isAdd;
+    Expr* start_,*end_,*value_;
+    Stmt* body_;
 };
 class WhileExpr: public Expr{
+    friend class Generator;
+public:
     void Accept(Visitor *v) override;
+private:
+    Expr *condition;
+    Stmt *body;
 };
 class JumpStmt : public Stmt {
     friend class Generator;
