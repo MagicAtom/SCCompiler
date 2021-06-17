@@ -57,6 +57,8 @@ protected:
 class Stmt : public ASTNode {
 public:
     virtual void Accept(Visitor* v);
+    llvm::BasicBlock* afterBB;
+    int label = -1;
 };
 class IfStmt : public Stmt{
     friend class Generator;
@@ -82,8 +84,6 @@ public:
     Expr(Token* tok):token_(tok){ }
     void Accept(Visitor* v) override;
     virtual ~Expr(){};
-    virtual bool IsLVal() = 0;
-    virtual void TypeChecking() = 0;
 private:
     Token* token_;
     std::string name_;
@@ -158,17 +158,9 @@ class BinaryOp:public Expr{
 public:
     void Accept(Visitor* v) override;
     unsigned GetOp() { return op_; }
-    bool IsLVal() override{
-
-    }
-    void TypeChecking() override{
-
-    }
 protected:
     BinaryOp(Expr* lhs, Expr* rhs,unsigned op):
-        lhs_(lhs),rhs_(rhs),op_(op){
-
-    }
+        lhs_(lhs),rhs_(rhs),op_(op){}
 
 private:
     Expr* lhs_;
@@ -188,10 +180,6 @@ class UnaryOp : public Expr{
     friend class Generator;
 public:
     void Accept(Visitor* v) override;
-    virtual bool IsVal();
-    void TypeChecking() override{
-
-    }
 protected:
     int op_;
     Expr* operand_;
@@ -202,8 +190,6 @@ class ConditionalOp:public Expr{
     friend class Generator;
 public:
     void Accept(Visitor* v) override;
-    virtual bool IsLVal() {return false;}
-    void TypeChecking() override;
 protected:
     ConditionalOp(Expr* cond,Expr* true_expr,Expr* false_expr):
         cond_(cond),true_expr_(true_expr),false_expr_(false_expr){}
@@ -218,21 +204,17 @@ public:
     using ArgList = std::vector<Expr*>;
 public:
     void Accept(Visitor* v) override;
-    virtual bool IsLVal(){return false;} ;
-    void TypeChecking();
 protected:
     FuncCall(Identifier* func,LabelStmt* label,std::vector<Expr*>* args):
         func_(func),retLabel_(label),args_(args){}
 private:
     Identifier* func_;
     LabelStmt* retLabel_;
-
     ArgList* args_;
 };
 class TempVar:public Expr{
 public:
     void Accept(Visitor* v) override;
-    bool IsLVal(){return true;}
 protected:
     TempVar(){
 
@@ -244,8 +226,6 @@ class Constant:public Expr{
     friend class Generator;
 public:
     virtual void Accept(Visitor* v) override;
-    bool IsLVal() {return false;}
-    virtual void TypeChecking() { }
 protected:
     Constant(Type* type, bool global):global_(global),type_(type){}
     Identifier *name;
@@ -263,8 +243,6 @@ class Identifier:public Expr{
     friend class Generator;
 public:
     void Accept(Visitor* v) override;
-    virtual bool IsLVal() { }
-    virtual void TypeChecking() {}
 protected:
     Identifier(std::string* name):name_(name){};
 private:

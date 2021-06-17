@@ -45,9 +45,6 @@ void FuncDecl::Accept(Visitor *v) {
 void Parameter::Accept(Visitor *v) {
     v->VisitParameter(this);
 }
-void VarDeclaration::Accept(Visitor* v){
-    v->VisitVarDeclaration(this);
-}
-void ConstDeclaration::Accept(Visitor* v) {
-    v->VisitConstDeclaration(this);
+void Declaration::Accept(Visitor *v){
+    v->VisitDeclaration(this);
 }

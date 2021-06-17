@@ -1,5 +1,5 @@
 #ifndef VISITOR_H
-#define VISITOR_h
+#define VISITOR_H
 
 #include <llvm/IR/BasicBlock.h>
 #include <llvm/IR/Module.h>
