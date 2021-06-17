@@ -24,8 +24,9 @@ public:
         module_ = std::make_unique<llvm::Module>("SCComplier",*context_);
         builder_ = std::make_unique<llvm::IRBuilder<>>(*context_);
     }
-    void Gen();
+    void GenIR();
     void GenExec();
+    void GenObjCode(const std::string filename);
 public: // visitor
     virtual llvm::Value* VisitBinaryOp(BinaryOp* binary) override;
     virtual llvm::Value* VisitUnaryOp(UnaryOp* unary) override;

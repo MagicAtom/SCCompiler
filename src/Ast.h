@@ -287,12 +287,12 @@ private:
     bool isStatic_; // Not support yet
     bool isConst_;
 };
-class Enumerator:public Identifier{
+class Enumerator:public Stmt{
 public:
+    Enumerator(IdentList* idents):idents_(idents){}
     void Accept(Visitor* v) override;
 protected:
-    //Enumerator(Constant* cst):constant_(cst){}
-    Constant* constant_;
+    IdentList* idents_;
 };
 class Parameter : public Stmt {
     friend class Generator;

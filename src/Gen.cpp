@@ -1,12 +1,51 @@
 #include "Gen.h"
 #include "Type.h"
 
-void Generator::Gen(){
+#include <llvm/Support/TargetRegistry.h>
+void Generator::GenIR(){ //
     for(int i = 0; i < roots_.size();i++){
 
     }
     this->module_->dump();
 }
+void Generator::GenObjCode(const std::string filename){
+    auto TargetTriple = llvm::sys::getDefaultTargetTriple();
+    llvm::InitializeAllTargetInfos();
+    llvm::InitializeAllTargets();
+    llvm::InitializeAllTargetMCs();
+    llvm::InitializeAllAsmParsers();
+    llvm::InitializeAllAsmPrinters();
+
+    std::string Error;
+    auto Target = llvm::TargetRegistry::lookupTarget(TargetTriple,Error);
+
+    // TODO: Support specific CPU
+    auto CPU = "generic";
+    auto Feactures = "";
+    llvm::TargetOptions opt;
+    auto RM = llvm::Optional<llvm::Reloc::Model> ();
+    auto TargetMachine = Target->createTargetMachine(TargetTriple,CPU,Feactures,opt,RM);
+
+    module_->setDataLayout(TargetMachine->createDataLayout());
+    module_->setTargetTriple(TargetTriple);
+
+    std::string file = filename + ".o";
+    std::error_code EC;
+    llvm::raw_fd_ostream dest(file,EC,llvm::sys::fs::OF_None);
+    if(EC){
+
+    }
+    llvm::legacy::PassManager pass;
+    auto FileType = llvm::CGFT_ObjectFile;
+
+    if (TargetMachine->addPassesToEmitFile(pass, dest, nullptr, FileType)) {
+        LOG_ERROR("TargetMachine can't emit a file of this type") ;
+        //
+    }
+    pass.run(*module_);
+    dest.flush();
+}
+// Gen executable file
 void Generator::GenExec(){
 
 }
@@ -162,7 +201,7 @@ llvm::Value* Generator::VisitFuncCall(FuncCall* funcCall) {
     return res;
 }
 llvm::Value* Generator::VisitEnumerator(Enumerator* enumer) {
-
+    return nullptr;
 }
 llvm::Value* Generator::VisitIdentifier(Identifier* ident) {
     return new llvm::LoadInst(FindValue(*ident->name_),"tmp",false,builder_->GetInsertBlock());
@@ -297,3 +336,4 @@ llvm::Value* Generator::VisitExpr(Expr* expr){
 llvm::Value* Generator::VisitStmt(Stmt* stmt){
     stmt->Accept(this);
 }
+//TODO: For/While/
