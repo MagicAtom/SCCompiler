@@ -48,3 +48,6 @@ void Parameter::Accept(Visitor *v) {
 void Declaration::Accept(Visitor *v){
     v->VisitDeclaration(this);
 }
+void Program::Accept(Visitor* v) {
+    v->VisitProgram(this);
+}

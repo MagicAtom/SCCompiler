@@ -3,10 +3,7 @@
 
 #include <llvm/Support/TargetRegistry.h>
 void Generator::GenIR(){ //
-    for(int i = 0; i < roots_.size();i++){
 
-    }
-    this->module_->dump();
 }
 void Generator::GenObjCode(const std::string filename){
     auto TargetTriple = llvm::sys::getDefaultTargetTriple();
@@ -223,7 +220,7 @@ llvm::Value* Generator::VisitDeclaration(Declaration *decl){
         }
         type = TypeConvert(decl->type_);
         if(decl->global_){
-            alloc = new llvm::GlobalVariable(*module_,type,decl->isConst_,llvm::GlobalValue::InternalLinkage, InitValue(type),*id->name_);
+            alloc = new llvm::GlobalVariable(*module_,type,decl->isConst_,llvm::GlobalValue::InternalLinkage, InitValue(decl->type_),*id->name_);
         } else {
             alloc = GetInst(GetTopFunc(),*id->name_,type);
         }
@@ -335,5 +332,10 @@ llvm::Value* Generator::VisitExpr(Expr* expr){
 }
 llvm::Value* Generator::VisitStmt(Stmt* stmt){
     stmt->Accept(this);
+}
+void Generator::VisitProgram(Program* program) {
+    for(const auto & node:program->astList){
+        VisitASTNode(node);
+    }
 }
 //TODO: For/While/

@@ -47,8 +47,8 @@ public:
     void Scan(); // Core func
     void ReadFunc();
     void ReadDecl(Block& block,bool isGlobal);
-    const TokenSequence& GetTS(){
-        return ts_;
+    TokenSequence* GetTS(){
+        return &ts_;
     }
     Token* ReadToken();
 private:

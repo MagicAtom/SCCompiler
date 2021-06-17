@@ -24,6 +24,7 @@
 #include <llvm/Support/DynamicLibrary.h>
 #include <llvm/Target/TargetMachine.h>
 
+class ASTNode;
 class BinaryOp;
 class UnaryOp;
 class ConditionalOp;
@@ -43,10 +44,12 @@ class EmptyStmt;
 class CompoundStmt;
 class FuncDecl;
 class Parameter;
+class Program;
 
 class Visitor {
 public:
   virtual ~Visitor() {}
+  virtual llvm::Value* VisitASTNode(ASTNode* node) = 0;
   virtual llvm::Value* VisitBinaryOp(BinaryOp* binary) = 0;
   virtual llvm::Value* VisitUnaryOp(UnaryOp* unary) = 0;
   virtual llvm::Value* VisitConditionalOp(ConditionalOp* cond) = 0;
@@ -66,5 +69,6 @@ public:
   virtual llvm::Value* VisitCompoundStmt(CompoundStmt* compStmt) = 0;
   virtual llvm::Value* VisitFuncDecl(FuncDecl* funcDecl) = 0;
   virtual llvm::Value* VisitParameter(Parameter* parameter) = 0;
+  virtual void         VisitProgram(Program* program) = 0;
 };
 #endif 

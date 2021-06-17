@@ -10,6 +10,7 @@
 class Generator;
 class Visitor;
 
+class ASTNode;
 // Expressions
 class Expr;
 class BinaryOp;
@@ -22,8 +23,6 @@ class CompoundStmt; // 复合类型
 class Object;
 class Identifier;
 class Declaration;
-class VarDeclaration;
-class ConstDeclaration;
 class Enumerator;
 
 // Stmt
@@ -35,9 +34,11 @@ class LabelStmt; // For goto
 class EmptyStmt;
 class ReturnStmt;
 class Parameter;
+class Program;
 
 using ParamList = std::vector<Parameter*>;
 using IdentList = std::vector<Identifier*>;
+using ASTList = std::vector<ASTNode*>;
 
 typedef struct Initializer {
     Initializer(Type* type,Expr* expr):type_(type),expr_(expr){}
@@ -195,8 +196,8 @@ protected:
         cond_(cond),true_expr_(true_expr),false_expr_(false_expr){}
 private:
     Expr* cond_;
-    Expr* true_expr_;
-    Expr* false_expr_;
+    Stmt* true_expr_;
+    Stmt* false_expr_;
 };
 class FuncCall:public Expr{
     friend class Generator;
@@ -283,5 +284,13 @@ private:
     IdentList* idents_;
     bool isVar_;
     Type* type_;
+};
+class Program : public ASTNode {
+    friend class Generator;
+public:
+    virtual void Accept(Visitor* v) override;
+    void Add(ASTNode* ast) {astList.push_back(ast);}
+private:
+    ASTList astList;
 };
 #endif 

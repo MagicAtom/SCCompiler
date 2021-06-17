@@ -17,6 +17,7 @@ public:
 
     void Parse(); // this is main function
     void Translate();
+    Program* GetASTRoot() { return trans_;}
 private:
     /* 
      * parse different type of expr 
@@ -62,7 +63,7 @@ private:
     CompoundStmt* ParseCaseStmt();
 private:
     TokenSequence* ts_;
-    Translation* trans_; // root of ast
+    Program* trans_; // root of ast
 };
 
 #endif
