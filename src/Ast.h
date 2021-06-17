@@ -13,6 +13,8 @@ class Visitor;
 class ASTNode;
 // Expressions
 class Expr;
+class ForExpr;
+class WhileExpr;
 class BinaryOp;
 class UnaryOp;
 class ConditionalOp;
@@ -88,6 +90,16 @@ public:
 private:
     Token* token_;
     std::string name_;
+};
+class ForExpr : public Expr{
+    friend class Generator;
+public:
+    void Accept(Visitor *v) override;
+private:
+    Expr* start_,*end_,*step,*body,*value;
+};
+class WhileExpr: public Expr{
+    void Accept(Visitor *v) override;
 };
 class JumpStmt : public Stmt {
     friend class Generator;

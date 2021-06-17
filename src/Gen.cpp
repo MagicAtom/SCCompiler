@@ -338,4 +338,21 @@ void Generator::VisitProgram(Program* program) {
         VisitASTNode(node);
     }
 }
-//TODO: For/While/
+llvm::Value* Generator::VisitForExpr(ForExpr *for_expr) {
+    llvm::Value *StartVal = VisitExpr(for_expr->start_);
+    if (!StartVal)
+        return nullptr;
+    llvm::Function *function = builder_->GetInsertBlock()->getParent();
+    llvm::BasicBlock *PreheaderBB = builder_->GetInsertBlock();
+    llvm::BasicBlock *LoopBB =
+            llvm::BasicBlock::Create(*context_, "loop", function);
+
+    // Goes to body
+    builder_->SetInsertPoint(LoopBB);
+    llvm::PHINode * Variable = builder_->CreatePHI(TypeConvert(),)
+
+
+}
+llvm::Value* Generator::VisitWhileExpr(WhileExpr *while_expr) {
+
+}
