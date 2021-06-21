@@ -156,9 +156,100 @@ const unordered_map<int, const char*> Token::TagLexMap{
   };
 
 
-  Token* Token::New(int tag){
-      return new(token)
+
+Token* Token::New(int tag) {
+  return new (tokenPool.Alloc()) Token(tag);
+}
+
+
+Token* Token::New(const Token& example) {
+  return new (tokenPool.Alloc()) Token(example);
+}
+
+
+Token* Token::New(int tag,
+                  const SourceLocation& loc,
+                  const std::string& str,
+                  bool ws) {
+  return new (tokenPool.Alloc()) Token(tag, loc, str, ws);
+}
+
+
+TokenSequence TokenSequence::GetLine() {
+  auto begin = head_;
+  while (head_ != end_ && (*head_)->tag_ != Token::NEW_LINE)
+    ++head_;
+  auto end = head_;
+  return {tokList_, begin, end};
+}
+
+
+
+bool TokenSequence::IsBeginOfLine() const {
+  if (head_ == tokList_->begin())
+    return true;
+
+  auto pre = head_;
+  --pre;
+
+
+  return ((*pre)->tag_ == Token::NEW_LINE ||
+          (*pre)->loc_.filename_ != (*head_)->loc_.filename_);
+}
+
+const Token* TokenSequence::Peek() const {
+  static auto eof = Token::New(Token::END);
+  if (head_ != end_ && (*head_)->tag_ == Token::NEW_LINE) {
+    ++head_;
+    return Peek();
+  } else if (head_ == end_) {
+    if (end_ != tokList_->begin())
+      *eof = *Back();
+    eof->tag_ = Token::END;
+    return eof;
+  } else if (parser_ && (*head_)->tag_ == Token::IDENTIFIER &&
+             (*head_)->str_ == "__func__") {
+    auto filename = Token::New(*(*head_));
+    filename->tag_ = Token::LITERAL;
+    filename->str_ = "\"" + parser_->CurFunc()->Name() + "\"";
+    *head_ = filename;
   }
+  return *head_;
+}
+
+
+const Token* TokenSequence::Expect(int expect) {
+  auto tok = Peek();
+  if (!Try(expect)) {
+    Error(tok, "'%s' expected, but got '%s'",
+        Token::Lexeme(expect), tok->str_.c_str());
+  }
+  return tok;
+}
+
+
+void TokenSequence::Print(FILE* fp) const {
+  unsigned lastLine = 0;
+  auto ts = *this;
+  while (!ts.Empty()) {
+    auto tok = ts.Next();
+    if (lastLine != tok->loc_.line_) {
+      fputs("\n", fp);
+      for (unsigned i = 0; i < tok->loc_.column_; ++i)
+        fputc(' ', fp);
+    } else if (tok->ws_) {
+      fputc(' ', fp);
+    }
+    fputs(tok->str_.c_str(), fp);
+    fflush(fp);
+    lastLine = tok->loc_.line_;
+  }
+  fputs("\n", fp);
+}
+
+
+
+
 
 
   
