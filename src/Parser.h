@@ -1,8 +1,42 @@
-#ifndef PARSER_H
-#define PARSER_H
-
-#include "Ast.h"
+#ifndef _PARSER_H_
+#define _PARSER_H_
 #include "Scanner.h"
+#include <string>
+#include "Ast.h"
+#include "Error.h"
+
+enum {
+  // Storage class specifiers
+  S_TYPEDEF = 0x01,
+  S_EXTERN = 0x02,
+  S_STATIC = 0x04,
+  S_THREAD = 0x08,
+  S_AUTO = 0x10,
+  S_REGISTER = 0x20,
+
+  // Type specifier
+  T_SIGNED = 0x40,
+  T_UNSIGNED = 0x80,
+  T_CHAR = 0x100,
+  T_SHORT = 0x200,
+  T_INT = 0x400,
+  T_LONG = 0x800,
+  T_VOID = 0x1000,
+  T_FLOAT = 0x2000,
+  T_DOUBLE = 0x4000,
+  T_BOOL = 0x8000,
+  T_COMPLEX = 0x10000,
+  // T_ATOMIC = 0x20000,
+  T_STRUCT_UNION = 0x40000,
+  T_ENUM = 0x80000,
+  T_TYPEDEF_NAME = 0x100000,
+
+  T_LLONG = 0x2000000,
+
+  // Function specifier
+  F_INLINE = 0x4000000,
+  F_NORETURN = 0x8000000,
+};
 
 // Parser gen Ast
 class Parser {
