@@ -1,39 +1,41 @@
 #include "Parser.h"
 
-    Paser::Parser(){}
-    Constant* Paser::ParseConstant(const Token* tok);
-    Constant* Paser::ParseFloat(const Token* tok);
-    Constant* Paser::ParseInteger(const Token* tok);
-    Constant* Parser::ParseCharacter(const Token* tok);
-    Constant* Parser::ParseSizeof();
-    Constant* Paser::ParseAlignof();
+    Parser::Parser(){}
+    Constant* Parser::ParseConstant(const Token* tok){}
+    Constant* Parser::ParseFloat(const Token* tok){}
+    Constant* Parser::ParseInteger(const Token* tok){}
+    Constant* Parser::ParseCharacter(const Token* tok){}
+    Constant* Parser::ParseSizeof(){}
+    Constant* Parser::ParseAlignof(){}
     // Expressions
-    Expr* Paser::ParseCastExpr();
-    Expr* Paser::ParseMultiplicativeExpr();
-    Expr* Paser::ParseAdditiveExpr();
-    Expr* Paser::ParseShiftExpr();
-    Expr* Paser::ParseRelationalExpr();
-    Expr* Paser::ParseEqualityExpr();
-    Expr* Paser::ParseBitiwiseAndExpr();
-    Expr* Paser::PParseBitwiseXorExpr();
-    Expr* Paser::PParseBitwiseOrExpr();
-    Expr* Paser::PParseLogicalAndExpr();
-    Expr* Paser::PParseLogicalOrExpr();
-    Expr* Paser::PParseConditionalExpr();
-    Expr* Paser::PParseCommaExpr();
-    Expr* Paser::PParseAssignExpr();
+    Expr* Parser::ParseCastExpr(){}
+    Expr* Parser::ParseMultiplicativeExpr(){}
+    Expr* Parser::ParseAdditiveExpr(){}
+    Expr* Parser::ParseShiftExpr(){}
+    Expr* Parser::ParseRelationalExpr(){}
+    Expr* Parser::ParseEqualityExpr(){}
+    Expr* Parser::ParseBitiwiseAndExpr(){}
+    Expr* Parser::ParseBitwiseXorExpr(){}
+    Expr* Parser::ParseBitwiseOrExpr(){}
+    Expr* Parser::ParseLogicalAndExpr(){}
+    Expr* Parser::ParseLogicalOrExpr(){}
+    Expr* Parser::ParseConditionalExpr(){}
+    Expr* Parser::ParseCommaExpr(){}
+    Expr* Parser::ParseAssignExpr(){}
     // Declarations
+
+
     // Statements
-    Stmt* Paser::PParseStmt();
-    //CompoundStmt* ParseCompoundStmt(FuncType* funcType=nullptr);
-    IfStmt* Paser::PParseIfStmt();
-    CompoundStmt* Paser::PParseSwitchStmt();
-    CompoundStmt* Paser::PParseWhileStmt();
-    CompoundStmt* Paser::PParseDoStmt();
-    CompoundStmt* Paser::PParseForStmt();
-    JumpStmt* Paser::PParseGotoStmt();
-    JumpStmt* Paser::PParseContinueStmt();
-    JumpStmt* Paser::PParseBreakStmt();
-    ReturnStmt* Paser::PParseReturnStmt();
-    CompoundStmt* Paser::PParseLabelStmt(const Token* label);
-    CompoundStmt* Paser::PParseCaseStmt();
+    Stmt* Parser::ParseStmt(){}
+
+    IfStmt* Parser::ParseIfStmt(){}
+    CompoundStmt* Parser::ParseSwitchStmt(){}
+    CompoundStmt* Parser::ParseWhileStmt(){}
+    CompoundStmt* Parser::ParseDoStmt(){}
+    CompoundStmt* Parser::ParseForStmt(){}
+    JumpStmt* Parser::ParseGotoStmt(){}
+    JumpStmt* Parser::ParseContinueStmt(){}
+    JumpStmt* Parser::ParseBreakStmt(){}
+    ReturnStmt* Parser::ParseReturnStmt(){}
+    CompoundStmt* Parser::ParseLabelStmt(const Token* label){}
+    CompoundStmt* Parser::ParseCaseStmt(){}
