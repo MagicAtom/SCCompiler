@@ -338,4 +338,71 @@ void Generator::VisitProgram(Program* program) {
         VisitASTNode(node);
     }
 }
-//TODO: For/While/
+llvm::Value* Generator::VisitForExpr(ForExpr *for_expr) {
+    LOG_INFO("For Loop");
+
+    //Init
+    llvm::Function *TheFunction = GetTopFunc();
+    llvm::Value* startValue = VisitExpr(for_expr->start_);
+    llvm::Value* endValue = VisitExpr(for_expr->end_);
+    llvm::Value *condValue = nullptr, *curValue = nullptr, *varValue = FindValue(for_expr->value_->name_);
+    builder_->CreateStore(startValue, varValue);
+
+    llvm::BasicBlock *condBB = llvm::BasicBlock::Create(*context_, "cond", TheFunction);
+    llvm::BasicBlock *loopBB = llvm::BasicBlock::Create(*context_, "loop", TheFunction);
+    llvm::BasicBlock *afterBB = llvm::BasicBlock::Create(*context_, "afterLoop", TheFunction);
+
+    //Cond
+    builder_->CreateBr(condBB);
+    builder_->SetInsertPoint(condBB);
+//    curValue = TheBuilder.CreateLoad(varValue, this->var->getName());
+    curValue = VisitExpr(for_expr->value_);
+    if (for_expr->isAdd)
+    {
+        condValue = builder_->CreateICmpSLE(curValue, endValue);
+    }
+    else
+    {
+        condValue = builder_->CreateICmpSGE(curValue, endValue);
+    }
+    condValue = builder_->CreateICmpNE(condValue, llvm::ConstantInt::get(llvm::Type::getInt1Ty(*context_), 0, true), "forCond");
+    auto branch = builder_->CreateCondBr(condValue, loopBB, afterBB);
+    condBB = builder_->GetInsertBlock();
+
+    //Loop
+    builder_->SetInsertPoint(loopBB);
+    VisitStmt(for_expr->body_);
+    llvm::Value *tmpValue = builder_->CreateAdd(curValue, builder_->getInt32(for_expr->isAdd ? 1 : -1));
+    builder_->CreateStore(tmpValue, varValue);
+    builder_->CreateBr(condBB);
+    loopBB = builder_->GetInsertBlock();
+
+    //After
+    builder_->SetInsertPoint(afterBB);
+    return branch;
+}
+llvm::Value* Generator::VisitWhileExpr(WhileExpr *while_expr) {
+    LOG_INFO("While Loop");
+
+    llvm::Function *TheFunction = GetTopFunc();
+    llvm::BasicBlock *condBB = llvm::BasicBlock::Create(*context_, "cond", TheFunction);
+    llvm::BasicBlock *loopBB = llvm::BasicBlock::Create(*context_, "loop", TheFunction);
+    llvm::BasicBlock *afterBB = llvm::BasicBlock::Create(*context, "afterLoop", TheFunction);
+
+    //Cond
+    builder_->CreateBr(condBB);
+    builder_->SetInsertPoint(condBB);
+    llvm::Value *condValue = VisitExpr(while_expr->condition);
+    condValue = builder_->CreateICmpNE(condValue, llvm::ConstantInt::get(llvm::Type::getInt1Ty(TheContext), 0, true), "whileCond");
+    auto branch = builder_->CreateCondBr(condValue, loopBB, afterBB);
+    condBB = builder_->GetInsertBlock();
+
+    //Loop
+    builder_->SetInsertPoint(loopBB);
+    VisitStmt(while_expr->body);
+    builder_->CreateBr(condBB);
+
+    //After
+    builder_->SetInsertPoint(afterBB);
+    return branch;
+}

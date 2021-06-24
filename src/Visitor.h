@@ -25,6 +25,8 @@
 #include <llvm/Target/TargetMachine.h>
 
 class ASTNode;
+class ForExpr;
+class WhileExpr;
 class BinaryOp;
 class UnaryOp;
 class ConditionalOp;
@@ -69,6 +71,8 @@ public:
   virtual llvm::Value* VisitCompoundStmt(CompoundStmt* compStmt) = 0;
   virtual llvm::Value* VisitFuncDecl(FuncDecl* funcDecl) = 0;
   virtual llvm::Value* VisitParameter(Parameter* parameter) = 0;
+  virtual llvm::Value* VisitForExpr(ForExpr* for_expr);
+  virtual llvm::Value* VisitWhileExpr(WhileExpr* while_expr);
   virtual void         VisitProgram(Program* program) = 0;
 };
 #endif 

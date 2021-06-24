@@ -49,6 +49,8 @@ public: // visitor
     virtual llvm::Value* VisitDeclaration(Declaration* decl) override;
     virtual void         VisitProgram(Program* program) override;
     virtual llvm::Value* VisitParameter(Parameter* para) {return nullptr;}
+    virtual llvm::Value* VisitForExpr(ForExpr *for_expr) override;
+    virtual llvm::Value* VisitWhileExpr(WhileExpr *while_expr) override;
 private:
     // TODO: Visual the AST here when gen IR
 private:

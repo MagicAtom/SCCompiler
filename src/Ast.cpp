@@ -51,3 +51,9 @@ void Declaration::Accept(Visitor *v){
 void Program::Accept(Visitor* v) {
     v->VisitProgram(this);
 }
+void ForExpr::Accept(Visitor *v) {
+    v->VisitForExpr(this);
+}
+void WhileExpr::Accept(Visitor *v) {
+    v->VisitWhileExpr(this);
+}
