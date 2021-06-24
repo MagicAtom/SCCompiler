@@ -12,7 +12,7 @@ class Visitor;
 
 class ASTNode;
 // Expressions
-class Expr;
+class Expression;
 class ForExpr;
 class WhileExpr;
 class BinaryOp;
@@ -43,8 +43,8 @@ using IdentList = std::vector<Identifier*>;
 using ASTList = std::vector<ASTNode*>;
 
 typedef struct Initializer {
-    Initializer(Type* type,Expr* expr):type_(type),expr_(expr){}
-    Expr* expr_;
+    Initializer(Type* type,Expression* expr):type_(type),expr_(expr){}
+    Expression* expr_;
     Type* type_;
 }Initializer;
 
@@ -73,41 +73,42 @@ public:
     };
     void Accept(Visitor* v);
 protected:
-    IfStmt(Expr* cond,Stmt* then,Stmt* els):cond_(cond),then_(then),else_(els){}
+    IfStmt(Expression* cond,Stmt* then,Stmt* els):cond_(cond),then_(then),else_(els){}
 private:
-    Expr* cond_;
+    Expression* cond_;
     Stmt* then_;
     Stmt* else_;
 };
 
-class Expr:public Stmt{
+class Expression:public Stmt{
     friend class Generator;
 public:
-    Expr() {}
-    Expr(Token* tok):token_(tok){ }
+    Expression() {}
+    Expression(Token* tok):token_(tok){ }
     void Accept(Visitor* v) override;
-    virtual ~Expr(){};
+    const Token* Tok() const { return token_; }
+    virtual ~Expression(){};
 private:
     Token* token_;
     std::string name_;
 };
-class ForExpr : public Expr{
+class ForExpr : public Expression{
     friend class Generator;
 public:
     void Accept(Visitor *v) override;
-    ForExpr(Expr* start,Expr* end,Expr* value, Stmt* body,bool add):
+    ForExpr(Expression* start,Expression* end,Expression* value, Stmt* body,bool add):
         start_(start),end_(end),value_(value),body_(body),isAdd(add){}
 private:
     bool isAdd;
-    Expr* start_,*end_,*value_;
+    Expression* start_,*end_,*value_;
     Stmt* body_;
 };
-class WhileExpr: public Expr{
+class WhileExpr: public Expression{
     friend class Generator;
 public:
     void Accept(Visitor *v) override;
 private:
-    Expr *condition;
+    Expression *condition;
     Stmt *body;
 };
 class JumpStmt : public Stmt {
@@ -134,7 +135,7 @@ private:
 class FuncDecl:public Stmt {
     friend class Generator;
 public:
-    FuncDecl(Identifier* ident,CompoundStmt* body,std::vector<Parameter*>* params,Expr* retexpr, bool global):
+    FuncDecl(Identifier* ident,CompoundStmt* body,std::vector<Parameter*>* params,Expression* retexpr, bool global):
         ident_(ident),retexpr_(retexpr),params_(params),global_(global){}
     void Accept(Visitor *v) override;
 private:
@@ -143,7 +144,7 @@ private:
     CompoundStmt* body_;
     ParamList * params_;
     bool global_;
-    Expr* retexpr_;
+    Expression* retexpr_;
 };
 class EmptyStmt:public Stmt{
 public:
@@ -158,9 +159,9 @@ public:
     ~ReturnStmt(){};
     void Accept(Visitor* v) override;
 protected:
-    ReturnStmt(Expr* expr):expr_(expr){}
+    ReturnStmt(Expression* expr):expr_(expr){}
 private:
-    Expr* expr_;
+    Expression* expr_;
 };
 /* Array, struct, union, enum and so on, but we have enumerator */
 class CompoundStmt:public Stmt{
@@ -175,18 +176,18 @@ private:
 };
 
 // Expressions
-class BinaryOp:public Expr{
+class BinaryOp:public Expression{
     friend class Generator;
 public:
     void Accept(Visitor* v) override;
     unsigned GetOp() { return op_; }
 protected:
-    BinaryOp(Expr* lhs, Expr* rhs,unsigned op):
+    BinaryOp(Expression* lhs, Expression* rhs,unsigned op):
         lhs_(lhs),rhs_(rhs),op_(op){}
 
 private:
-    Expr* lhs_;
-    Expr* rhs_;
+    Expression* lhs_;
+    Expression* rhs_;
     unsigned op_;
 };
 
@@ -198,43 +199,43 @@ private:
  * "~"
  * "!"
  */
-class UnaryOp : public Expr{
+class UnaryOp : public Expression{
     friend class Generator;
 public:
     void Accept(Visitor* v) override;
 protected:
     int op_;
-    Expr* operand_;
+    Expression* operand_;
 };
 
 /* ? true_expr : false_expr ;  */
-class ConditionalOp:public Expr{
+class ConditionalOp:public Expression{
     friend class Generator;
 public:
     void Accept(Visitor* v) override;
 protected:
-    ConditionalOp(Expr* cond,Expr* true_expr,Expr* false_expr):
+    ConditionalOp(Expression* cond,Expression* true_expr,Expression* false_expr):
         cond_(cond),true_expr_(true_expr),false_expr_(false_expr){}
 private:
-    Expr* cond_;
+    Expression* cond_;
     Stmt* true_expr_;
     Stmt* false_expr_;
 };
-class FuncCall:public Expr{
+class FuncCall:public Expression{
     friend class Generator;
 public:
-    using ArgList = std::vector<Expr*>;
+    using ArgList = std::vector<Expression*>;
 public:
     void Accept(Visitor* v) override;
 protected:
-    FuncCall(Identifier* func,LabelStmt* label,std::vector<Expr*>* args):
+    FuncCall(Identifier* func,LabelStmt* label,std::vector<Expression*>* args):
         func_(func),retLabel_(label),args_(args){}
 private:
     Identifier* func_;
     LabelStmt* retLabel_;
     ArgList* args_;
 };
-class TempVar:public Expr{
+class TempVar:public Expression{
 public:
     void Accept(Visitor* v) override;
 protected:
@@ -244,12 +245,13 @@ protected:
 private:
     int tag_;
 };
-class Constant:public Expr{
+class Constant:public Expression{
     friend class Generator;
 public:
     virtual void Accept(Visitor* v) override;
-protected:
+    Constant* New(Token* tok, int tag, int val);
     Constant(Type* type, bool global):global_(global),type_(type){}
+protected:
     Identifier *name;
     bool global_;
     Type* type_; // integer,char,double and so on.
@@ -261,7 +263,7 @@ protected:
     };
 };
 // Ojbect,struct/enum/union,function,label.
-class Identifier:public Expr{
+class Identifier:public Expression{
     friend class Generator;
 public:
     void Accept(Visitor* v) override;
@@ -270,7 +272,7 @@ protected:
 private:
     std::string* name_;
 };
-class Declaration : public Expr {
+class Declaration : public Expression {
     friend class Generator;
 public:
     Declaration(IdentList* ident,Type* type):idents_(ident),type_(type) {}

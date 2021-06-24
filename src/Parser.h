@@ -5,6 +5,15 @@
 #include "Ast.h"
 #include "Error.h"
 
+
+
+enum class CodeType{
+    CHAR16,
+    CHAR32,
+    UTF8,
+    NONE
+};
+
 enum {
   // Storage class specifiers
   S_TYPEDEF = 0x01,
@@ -52,7 +61,7 @@ public:
     void Parse(); // this is main function
     void Translate();
     Program* GetASTRoot() { return trans_;}
-private:
+protected:
     /* 
      * parse different type of expr 
      * for example as following
@@ -61,40 +70,31 @@ private:
     // Constant
     Constant* ParseConstant(const Token* tok);
     Constant* ParseFloat(const Token* tok);
-    Constant* ParseInteger(const Token* tok);
+
     Constant* ParseCharacter(const Token* tok);
     Constant* ParseSizeof();
     Constant* ParseAlignof();
+    Constant* ParserInteger(const Token* tok);
     // Expressions
-    Expr* ParseCastExpr();
-    Expr* ParseMultiplicativeExpr();
-    Expr* ParseAdditiveExpr();
-    Expr* ParseShiftExpr();
-    Expr* ParseRelationalExpr();
-    Expr* ParseEqualityExpr();
-    Expr* ParseBitiwiseAndExpr();
-    Expr* ParseBitwiseXorExpr();
-    Expr* ParseBitwiseOrExpr();
-    Expr* ParseLogicalAndExpr();
-    Expr* ParseLogicalOrExpr();
-    Expr* ParseConditionalExpr();
-    Expr* ParseCommaExpr();
-    Expr* ParseAssignExpr();
+    Expression* ParseCastExpr();
+    Expression* ParseMultiplicativeExpr();
+    Expression* ParseAdditiveExpr();
+    Expression* ParseShiftExpr();
+    Expression* ParseRelationalExpr();
+    Expression* ParseEqualityExpr();
+    Expression* ParseBitiwiseAndExpr();
+    Expression* ParseBitwiseXorExpr();
+    Expression* ParseBitwiseOrExpr();
+    Expression* ParseLogicalAndExpr();
+    Expression* ParseLogicalOrExpr();
+    Expression* ParseConditionalExpr();
+    Expression* ParseCommaExpr();
+    Expression* ParseAssignExpr();
     // Declarations
     // Statements
     Stmt* ParseStmt();
     //CompoundStmt* ParseCompoundStmt(FuncType* funcType=nullptr);
     IfStmt* ParseIfStmt();
-    CompoundStmt* ParseSwitchStmt();
-    CompoundStmt* ParseWhileStmt();
-    CompoundStmt* ParseDoStmt();
-    CompoundStmt* ParseForStmt();
-    JumpStmt* ParseGotoStmt();
-    JumpStmt* ParseContinueStmt();
-    JumpStmt* ParseBreakStmt();
-    ReturnStmt* ParseReturnStmt();
-    CompoundStmt* ParseLabelStmt(const Token* label);
-    CompoundStmt* ParseCaseStmt();
 private:
     TokenSequence* ts_;
     Program* trans_; // root of ast

@@ -9,6 +9,7 @@
 #include "Core.h"
 #include <string>
 #include <vector>
+#include "Token.h"
 
 using TokenList = std::vector<Token>;
 struct Block{
@@ -45,6 +46,7 @@ public:
 
     }
     void Scan(); // Core func
+    Token* Scan();
     void ReadFunc();
     void ReadDecl(Block& block,bool isGlobal);
     TokenSequence* GetTS(){
@@ -78,10 +80,14 @@ private:
      */
     Token* make_char();
     Token* make_integer();
+    Token* Scanner::MakeToken(int tag);
 private:
     std::string filename_;
     std::string* text_;
     TokenSequence ts_;
+    CodeLocation loc;
+    Token* token;
+    const char* c;
 };
 
 #endif

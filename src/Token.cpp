@@ -168,7 +168,7 @@ Token* Token::New(const Token& example) {
 
 
 Token* Token::New(int tag,
-                  const SourceLocation& loc,
+                  const CodeLocation& loc,
                   const std::string& str,
                   bool ws) {
   return new (tokenPool.Alloc()) Token(tag, loc, str, ws);
